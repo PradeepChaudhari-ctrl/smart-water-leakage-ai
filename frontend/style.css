@@ -1,0 +1,514 @@
+*{
+    box-sizing:border-box;
+}
+
+
+body{
+
+    margin:0;
+
+    font-family:
+    Arial, Helvetica, sans-serif;
+
+    background:#f4f7fb;
+
+    color:#222;
+
+}
+
+
+
+h1{
+
+    text-align:center;
+
+    color:#1266c5;
+
+    margin:30px;
+
+}
+
+
+
+
+
+.card{
+
+    background:white;
+
+    width:85%;
+
+    margin:20px auto;
+
+    padding:25px;
+
+    border-radius:15px;
+
+    box-shadow:
+    0 5px 20px rgba(0,0,0,0.08);
+
+}
+
+
+
+
+
+h2{
+
+    color:#1d3557;
+
+}
+
+
+
+
+
+
+
+input[type="file"]{
+
+    padding:10px;
+
+    border:1px solid #ccc;
+
+    border-radius:8px;
+
+}
+
+
+
+
+
+
+button{
+
+    background:#1266c5;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 30px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    margin-left:20px;
+
+}
+
+
+
+button:hover{
+
+    background:#084c9e;
+
+}
+
+
+
+
+
+
+
+/* Summary Cards */
+
+
+.summary{
+
+    display:flex;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+
+}
+
+
+
+.box{
+
+    flex:1;
+
+    background:#f8fbff;
+
+    padding:20px;
+
+    border-radius:12px;
+
+    text-align:center;
+
+}
+
+
+
+
+
+
+
+#status,
+#probability,
+#severity{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+
+
+
+
+/* Risk Meter */
+
+
+.risk-meter{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin:30px;
+
+}
+
+
+
+
+#riskCircle{
+
+
+    width:180px;
+
+    height:180px;
+
+    border-radius:50%;
+
+
+    border:20px solid #ddd;
+
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+
+    font-size:35px;
+
+    font-weight:bold;
+
+
+    transition:0.5s;
+
+
+}
+
+
+
+
+
+
+
+
+/* Alert */
+
+
+.alert-card{
+
+    border-left:8px solid red;
+
+}
+
+
+
+
+.alert-danger{
+
+    background:#ffe5e5;
+
+    border-left:8px solid red;
+
+}
+
+
+
+
+.alert-normal{
+
+    background:#e8ffe8;
+
+    border-left:8px solid green;
+
+}
+
+
+
+
+#alertMessage{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+
+
+
+
+/* AI Explanation */
+
+
+li{
+
+    margin:10px;
+
+    font-size:17px;
+
+}
+
+
+
+
+
+
+
+
+
+/* Chart */
+
+
+.chart-box{
+
+    height:400px;
+
+}
+
+
+
+canvas{
+
+    width:100%!important;
+
+    height:100%!important;
+
+}
+
+
+
+
+
+
+
+
+/* History Table */
+
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+
+
+
+th{
+
+    background:#1266c5;
+
+    color:white;
+
+    padding:12px;
+
+}
+
+
+
+
+td{
+
+    padding:12px;
+
+    border-bottom:1px solid #ddd;
+
+    text-align:center;
+
+}
+
+
+
+
+tr:hover{
+
+    background:#f1f7ff;
+
+}
+
+/* =========================
+   Live Sensor Monitoring
+========================= */
+
+
+#flowRate,
+#pressure,
+#temperature,
+#sensorStatus{
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    color:#1266c5;
+
+}
+
+
+
+
+.box h3{
+
+    color:#1d3557;
+
+}
+
+
+
+
+/* Sensor Status Colors */
+
+
+.status-normal{
+
+    color:green !important;
+
+}
+
+
+
+.status-warning{
+
+    color:red !important;
+
+}
+
+
+
+
+/* Live Card Animation */
+
+
+.box{
+
+    transition:0.3s;
+
+}
+
+
+
+.box:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:
+    0 5px 15px rgba(0,0,0,0.15);
+
+}
+
+
+
+
+
+/* Dashboard Header */
+
+
+h1{
+
+    font-size:36px;
+
+    letter-spacing:1px;
+
+}
+
+
+
+
+
+/* Better Mobile Sensor Cards */
+
+
+@media(max-width:700px){
+
+
+.summary{
+
+    gap:10px;
+
+}
+
+
+.box{
+
+    width:100%;
+
+}
+
+
+}
+
+
+
+
+
+
+
+/* Mobile */
+
+
+@media(max-width:700px){
+
+
+.card{
+
+    width:95%;
+
+}
+
+
+
+button{
+
+    margin-top:15px;
+
+    margin-left:0;
+
+}
+
+
+
+.summary{
+
+    flex-direction:column;
+
+}
+
+
+}

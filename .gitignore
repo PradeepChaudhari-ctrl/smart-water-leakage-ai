@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+.env
+
+# Database
+*.db
+
+# Temporary files
+temp_sensor.csv
+
+# Mac
+.DS_Store
+
+# Model cache
+.ipynb_checkpoints/
+
+# Node
+node_modules/

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>
+Smart Water Leakage AI Dashboard
+</title>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<h1>
+💧 Smart Water Leakage AI Dashboard
+</h1>
+
+
+
+
+
+<!-- Upload Sensor Data -->
+
+<div class="card">
+
+<h2>
+📂 Upload Sensor Data
+</h2>
+
+
+<input 
+type="file"
+id="file"
+accept=".csv">
+
+
+<button onclick="predict()">
+Analyze
+</button>
+
+
+</div>
+
+
+
+
+
+
+<!-- Real Time Sensor Monitoring -->
+
+<div class="card">
+
+<h2>
+📡 Real-Time Sensor Monitoring
+</h2>
+
+
+<div class="summary">
+
+
+<!-- Flow Rate -->
+
+<div class="box">
+
+<h3>
+💧 Flow Rate
+</h3>
+
+<p id="flowRate">
+-
+</p>
+
+</div>
+
+
+
+<!-- Pressure -->
+
+<div class="box">
+
+<h3>
+⚙️ Pressure
+</h3>
+
+<p id="pressure">
+-
+</p>
+
+</div>
+
+
+
+<!-- Temperature -->
+
+<div class="box">
+
+<h3>
+🌡 Temperature
+</h3>
+
+<p id="temperature">
+-
+</p>
+
+</div>
+
+
+
+<!-- Live AI Status -->
+
+<div class="box">
+
+<h3>
+🤖 Live AI Status
+</h3>
+
+<p id="sensorAIStatus">
+-
+</p>
+</div>
+
+
+</div>
+
+</div>
+<!-- Live AI Prediction -->
+
+<div class="card">
+
+
+<h2>
+🤖 Live AI Prediction
+</h2>
+
+
+
+<div class="summary">
+
+
+
+<div class="box">
+
+<h3>
+Current Status
+</h3>
+
+<p id="liveStatus">
+-
+</p>
+
+</div>
+
+
+
+
+
+<div class="box">
+
+<h3>
+Leakage Probability
+</h3>
+
+<p id="liveProbability">
+-
+</p>
+
+</div>
+
+
+
+
+
+<div class="box">
+
+<h3>
+Risk Level
+</h3>
+
+<p id="liveSeverity">
+-
+</p>
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+<!-- AI Prediction -->
+
+
+<div class="card">
+
+
+<h2>
+📊 AI Prediction Summary
+</h2>
+
+
+
+<div class="summary">
+
+
+
+<div class="box">
+
+<h3>
+Status
+</h3>
+
+<p id="status">
+-
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="box">
+
+
+<h3>
+Probability
+</h3>
+
+
+<p id="probability">
+-
+</p>
+
+
+</div>
+
+
+
+
+
+
+<div class="box">
+
+
+<h3>
+Severity
+</h3>
+
+
+<p id="severity">
+-
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- Leakage Risk -->
+
+
+<div class="card">
+
+
+<h2>
+🎯 Leakage Risk
+</h2>
+
+
+
+<div class="risk-meter">
+
+
+<div id="riskCircle">
+
+
+<span id="gaugeValue">
+0%
+</span>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- Alert -->
+
+
+<div class="card alert-card" id="alertBox">
+
+
+<h2>
+🚨 Alert System
+</h2>
+
+
+<h3 id="alertMessage">
+No Alert
+</h3>
+
+
+<p id="action">
+-
+</p>
+
+
+</div>
+
+<div class="card">
+
+<h2>
+🧠 AI Anomaly Analysis
+</h2>
+
+
+<p id="anomalyStatus">
+-
+</p>
+
+
+<p id="anomalyScore">
+-
+</p>
+
+
+<p id="anomalyCount">
+-
+</p>
+
+
+<p id="anomalyMessage">
+-
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- AI Explanation -->
+
+
+<div class="card">
+
+
+<h2>
+🧠 AI Explanation
+</h2>
+
+
+<ul id="explanation">
+
+</ul>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- Sensor Graph -->
+
+
+<div class="card">
+
+
+<h2>
+📈 Sensor Signal Analysis
+</h2>
+
+
+
+<div class="chart-box">
+
+
+<canvas id="sensorChart"></canvas>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- Prediction History -->
+
+
+<div class="card">
+
+
+<h2>
+📜 Prediction History
+</h2>
+
+
+
+
+<table>
+
+
+<thead>
+
+
+<tr>
+
+
+<th>
+File
+</th>
+
+
+<th>
+Status
+</th>
+
+
+<th>
+Probability
+</th>
+
+
+<th>
+Severity
+</th>
+
+
+<th>
+Time
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody id="history">
+
+
+</tbody>
+
+
+</table>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<script src="script.js"></script>
+
+
+</body>
+
+
+</html>
