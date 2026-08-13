@@ -1,514 +1,1020 @@
-*{
-    box-sizing:border-box;
+* {
+    box-sizing: border-box;
 }
 
 
-body{
+:root {
 
-    margin:0;
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --text: #152238;
+    --muted: #718096;
+
+    --primary: #1266c5;
+    --primary-dark: #084c9e;
+
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+
+    --border: #e5eaf1;
+
+    --shadow:
+        0 8px 30px rgba(15, 23, 42, 0.07);
+
+}
+
+
+body {
+
+    margin: 0;
 
     font-family:
-    Arial, Helvetica, sans-serif;
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
 
-    background:#f4f7fb;
+    background: var(--bg);
 
-    color:#222;
-
-}
-
-
-
-h1{
-
-    text-align:center;
-
-    color:#1266c5;
-
-    margin:30px;
+    color: var(--text);
 
 }
 
 
+/* =====================================================
+   HEADER
+===================================================== */
+
+.dashboard-header {
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b4f9c,
+            #1688d8
+        );
+
+    color: white;
+
+    padding: 28px 7%;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+}
 
 
+.brand {
 
-.card{
+    font-size: 28px;
 
-    background:white;
+    font-weight: 800;
 
-    width:85%;
+    letter-spacing: -0.5px;
 
-    margin:20px auto;
+}
 
-    padding:25px;
 
-    border-radius:15px;
+.dashboard-header p {
+
+    margin: 7px 0 0;
+
+    opacity: 0.85;
+
+}
+
+
+.system-status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.7px;
+
+}
+
+
+.status-dot {
+
+    width: 10px;
+
+    height: 10px;
+
+    border-radius: 50%;
+
+    background: #4ade80;
 
     box-shadow:
-    0 5px 20px rgba(0,0,0,0.08);
+        0 0 12px #4ade80;
 
 }
 
 
+/* =====================================================
+   CONTAINER
+===================================================== */
 
+.dashboard-container {
 
+    width: 88%;
 
-h2{
+    max-width: 1450px;
 
-    color:#1d3557;
-
-}
-
-
-
-
-
-
-
-input[type="file"]{
-
-    padding:10px;
-
-    border:1px solid #ccc;
-
-    border-radius:8px;
+    margin: 35px auto 60px;
 
 }
 
 
+/* =====================================================
+   SECTION
+===================================================== */
 
+.section {
 
-
-
-button{
-
-    background:#1266c5;
-
-    color:white;
-
-    border:none;
-
-    padding:12px 30px;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
-    font-size:16px;
-
-    margin-left:20px;
+    margin-bottom: 30px;
 
 }
 
 
+.section-title {
 
-button:hover{
+    display: flex;
 
-    background:#084c9e;
+    justify-content: space-between;
 
-}
+    align-items: center;
 
-
-
-
-
-
-
-/* Summary Cards */
-
-
-.summary{
-
-    display:flex;
-
-    gap:20px;
-
-    flex-wrap:wrap;
+    margin-bottom: 20px;
 
 }
 
 
+.section-title h2 {
 
-.box{
-
-    flex:1;
-
-    background:#f8fbff;
-
-    padding:20px;
-
-    border-radius:12px;
-
-    text-align:center;
+    margin: 4px 0 0;
 
 }
 
 
+.eyebrow {
 
+    display: block;
 
+    color: var(--primary);
 
+    font-size: 11px;
 
+    font-weight: 800;
 
-#status,
-#probability,
-#severity{
-
-    font-size:22px;
-
-    font-weight:bold;
-
-}
-
-
-
-
-
-
-
-
-
-/* Risk Meter */
-
-
-.risk-meter{
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    margin:30px;
+    letter-spacing: 1.5px;
 
 }
 
 
+/* =====================================================
+   LIVE BADGES
+===================================================== */
 
+.live-badge,
+.ai-badge {
 
-#riskCircle{
+    padding: 7px 12px;
 
+    border-radius: 20px;
 
-    width:180px;
+    font-size: 11px;
 
-    height:180px;
-
-    border-radius:50%;
-
-
-    border:20px solid #ddd;
-
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-
-    font-size:35px;
-
-    font-weight:bold;
-
-
-    transition:0.5s;
-
+    font-weight: 800;
 
 }
 
 
+.live-badge {
 
+    background: #e8f8ee;
 
-
-
-
-
-/* Alert */
-
-
-.alert-card{
-
-    border-left:8px solid red;
+    color: var(--success);
 
 }
 
 
+.ai-badge {
 
+    background: #e9f2ff;
 
-.alert-danger{
-
-    background:#ffe5e5;
-
-    border-left:8px solid red;
+    color: var(--primary);
 
 }
 
 
+/* =====================================================
+   METRICS
+===================================================== */
 
+.metric-grid {
 
-.alert-normal{
+    display: grid;
 
-    background:#e8ffe8;
+    grid-template-columns:
+        repeat(4, 1fr);
 
-    border-left:8px solid green;
-
-}
-
-
-
-
-#alertMessage{
-
-    font-size:22px;
-
-    font-weight:bold;
+    gap: 18px;
 
 }
 
 
+.metric-card {
 
+    background: var(--card);
 
+    border: 1px solid var(--border);
 
+    border-radius: 16px;
 
+    padding: 24px;
 
+    box-shadow: var(--shadow);
 
+    display: flex;
 
-/* AI Explanation */
+    align-items: center;
 
+    gap: 18px;
 
-li{
-
-    margin:10px;
-
-    font-size:17px;
-
-}
-
-
-
-
-
-
-
-
-
-/* Chart */
-
-
-.chart-box{
-
-    height:400px;
+    transition: 0.25s;
 
 }
 
 
+.metric-card:hover {
 
-canvas{
-
-    width:100%!important;
-
-    height:100%!important;
-
-}
-
-
-
-
-
-
-
-
-/* History Table */
-
-
-table{
-
-    width:100%;
-
-    border-collapse:collapse;
-
-}
-
-
-
-
-th{
-
-    background:#1266c5;
-
-    color:white;
-
-    padding:12px;
-
-}
-
-
-
-
-td{
-
-    padding:12px;
-
-    border-bottom:1px solid #ddd;
-
-    text-align:center;
-
-}
-
-
-
-
-tr:hover{
-
-    background:#f1f7ff;
-
-}
-
-/* =========================
-   Live Sensor Monitoring
-========================= */
-
-
-#flowRate,
-#pressure,
-#temperature,
-#sensorStatus{
-
-    font-size:24px;
-
-    font-weight:bold;
-
-    color:#1266c5;
-
-}
-
-
-
-
-.box h3{
-
-    color:#1d3557;
-
-}
-
-
-
-
-/* Sensor Status Colors */
-
-
-.status-normal{
-
-    color:green !important;
-
-}
-
-
-
-.status-warning{
-
-    color:red !important;
-
-}
-
-
-
-
-/* Live Card Animation */
-
-
-.box{
-
-    transition:0.3s;
-
-}
-
-
-
-.box:hover{
-
-    transform:translateY(-5px);
+    transform: translateY(-3px);
 
     box-shadow:
-    0 5px 15px rgba(0,0,0,0.15);
+        0 12px 35px rgba(
+            15,
+            23,
+            42,
+            0.11
+        );
 
 }
 
 
+.metric-icon {
 
+    width: 52px;
 
+    height: 52px;
 
-/* Dashboard Header */
+    display: flex;
 
+    align-items: center;
 
-h1{
+    justify-content: center;
 
-    font-size:36px;
+    border-radius: 14px;
 
-    letter-spacing:1px;
+    background: #edf5ff;
 
-}
-
-
-
-
-
-/* Better Mobile Sensor Cards */
-
-
-@media(max-width:700px){
-
-
-.summary{
-
-    gap:10px;
+    font-size: 24px;
 
 }
 
 
-.box{
+.metric-label {
 
-    width:100%;
+    display: block;
 
-}
+    color: var(--muted);
 
+    font-size: 13px;
 
-}
-
-
-
-
-
-
-
-/* Mobile */
-
-
-@media(max-width:700px){
-
-
-.card{
-
-    width:95%;
+    margin-bottom: 7px;
 
 }
 
 
+.metric-card strong {
 
-button{
+    display: block;
 
-    margin-top:15px;
+    font-size: 23px;
 
-    margin-left:0;
+    color: var(--text);
+
+}
+
+
+.ai-card strong {
+
+    color: var(--success);
 
 }
 
 
+/* =====================================================
+   CARDS
+===================================================== */
 
-.summary{
+.card {
 
-    flex-direction:column;
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 18px;
+
+    padding: 26px;
+
+    box-shadow: var(--shadow);
 
 }
 
+
+.card h2 {
+
+    margin-top: 6px;
+
+    color: var(--text);
+
+}
+
+
+/* =====================================================
+   PREDICTION
+===================================================== */
+
+.prediction-layout {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 2fr)
+        minmax(280px, 1fr);
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.prediction-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b4f9c,
+            #167bc7
+        );
+
+    color: white;
+
+    border-radius: 18px;
+
+    padding: 30px;
+
+    box-shadow: var(--shadow);
+
+}
+
+
+.prediction-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+}
+
+
+.prediction-header .eyebrow {
+
+    color: #b9ddff;
+
+}
+
+
+.prediction-card h2 {
+
+    color: white;
+
+    margin-bottom: 0;
+
+}
+
+
+.prediction-content {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 15px;
+
+    margin-top: 35px;
+
+}
+
+
+.prediction-status,
+.prediction-stat {
+
+    background:
+        rgba(255,255,255,0.10);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    padding: 20px;
+
+    border-radius: 14px;
+
+}
+
+
+.prediction-status span,
+.prediction-stat span {
+
+    display: block;
+
+    font-size: 11px;
+
+    letter-spacing: 1px;
+
+    opacity: 0.75;
+
+    margin-bottom: 10px;
+
+}
+
+
+.prediction-status strong,
+.prediction-stat strong {
+
+    font-size: 23px;
+
+}
+
+
+/* =====================================================
+   GAUGE
+===================================================== */
+
+.gauge-card {
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 18px;
+
+    padding: 30px;
+
+    text-align: center;
+
+    box-shadow: var(--shadow);
+
+}
+
+
+.risk-meter {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin: 15px 0;
+
+}
+
+
+#riskCircle {
+
+    width: 175px;
+
+    height: 175px;
+
+    border-radius: 50%;
+
+    border: 18px solid #dce3eb;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transition: 0.5s;
+
+}
+
+
+#gaugeValue {
+
+    font-size: 38px;
+
+    font-weight: 800;
+
+}
+
+
+.gauge-label {
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+}
+
+
+/* =====================================================
+   ALERT
+===================================================== */
+
+.alert-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+
+    border-left: 6px solid var(--success);
+
+}
+
+
+.alert-card.alert-danger {
+
+    border-left-color:
+        var(--danger);
+
+    background: #fff7f7;
+
+}
+
+
+.alert-card.alert-normal {
+
+    border-left-color:
+        var(--success);
+
+    background: #f7fff9;
+
+}
+
+
+.alert-icon {
+
+    font-size: 35px;
+
+}
+
+
+.alert-content h2 {
+
+    margin: 7px 0;
+
+}
+
+
+.alert-content p {
+
+    margin: 0;
+
+    color: var(--muted);
+
+}
+
+
+/* =====================================================
+   UPLOAD
+===================================================== */
+
+.upload-card {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 25px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.upload-card p {
+
+    color: var(--muted);
+
+}
+
+
+.upload-controls {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+
+input[type="file"] {
+
+    padding: 11px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 9px;
+
+    background: #fafbfd;
+
+}
+
+
+button {
+
+    background: var(--primary);
+
+    color: white;
+
+    border: none;
+
+    padding: 12px 22px;
+
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    transition: 0.2s;
+
+}
+
+
+button:hover {
+
+    background: var(--primary-dark);
+
+    transform: translateY(-1px);
+
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+.summary-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 18px;
+
+}
+
+
+.result-card {
+
+    padding: 22px;
+
+    border-radius: 14px;
+
+    background: #f7faff;
+
+    border: 1px solid #e5edf8;
+
+}
+
+
+.result-card span {
+
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 10px;
+
+}
+
+
+.result-card strong {
+
+    font-size: 21px;
+
+}
+
+
+/* =====================================================
+   CHART
+===================================================== */
+
+.chart-box {
+
+    height: 400px;
+
+}
+
+
+canvas {
+
+    width: 100% !important;
+
+    height: 100% !important;
+
+}
+
+
+/* =====================================================
+   TWO COLUMN
+===================================================== */
+
+.two-column {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 20px;
+
+    margin: 20px 0;
+
+}
+
+
+.two-column p {
+
+    color: var(--muted);
+
+}
+
+
+#explanation {
+
+    padding-left: 20px;
+
+}
+
+
+#explanation li {
+
+    margin: 10px 0;
+
+}
+
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+.table-wrapper {
+
+    overflow-x: auto;
+
+}
+
+
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+}
+
+
+th {
+
+    background: #f1f6fc;
+
+    color: #334155;
+
+    padding: 14px;
+
+    font-size: 12px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+
+}
+
+
+td {
+
+    padding: 14px;
+
+    border-bottom:
+        1px solid
+        var(--border);
+
+    text-align: center;
+
+    font-size: 14px;
+
+}
+
+
+tr:hover {
+
+    background: #f8fbff;
+
+}
+
+
+/* =====================================================
+   STATUS COLORS
+===================================================== */
+
+.status-normal {
+
+    color: var(--success) !important;
+
+}
+
+
+.status-warning {
+
+    color: var(--danger) !important;
+
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+footer {
+
+    text-align: center;
+
+    color: var(--muted);
+
+    padding: 25px;
+
+    font-size: 13px;
+
+}
+
+
+footer span {
+
+    margin: 0 8px;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 1000px) {
+
+    .metric-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+
+    .prediction-layout {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .dashboard-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 18px;
+
+    }
+
+
+    .dashboard-container {
+
+        width: 94%;
+
+    }
+
+
+    .metric-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .prediction-content {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .summary-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .two-column {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .upload-card {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+
+    .upload-controls {
+
+        width: 100%;
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+
+    input[type="file"] {
+
+        width: 100%;
+
+    }
+
+
+    button {
+
+        width: 100%;
+
+    }
+
+
+    .brand {
+
+        font-size: 23px;
+
+    }
 
 }

@@ -3,929 +3,1253 @@ const API = "http://127.0.0.1:8000";
 let chart = null;
 
 
-// =================================
+// ======================================================
+// HELPER
+// ======================================================
+
+function setText(id, value) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+
+function getStatusClass(status) {
+
+    const value = String(status || "").toLowerCase();
+
+    if (
+        value.includes("leakage") ||
+        value.includes("warning") ||
+        value.includes("alert")
+    ) {
+        return "status-warning";
+    }
+
+    return "status-normal";
+}
+
+
+// ======================================================
 // LIVE SENSOR MONITORING
-// =================================
+// ======================================================
 
-async function updateSensor(){
+async function updateSensor() {
 
+    try {
 
-try{
-
-
-let response = await fetch(
-API + "/sensor/live"
-);
-
-
-let data = await response.json();
+        const response = await fetch(
+            API + "/sensor/live",
+            {
+                cache: "no-store"
+            }
+        );
 
 
-console.log("Live Sensor:",data);
+        if (!response.ok) {
+
+            throw new Error(
+                `Sensor API Error: ${response.status}`
+            );
+
+        }
 
 
-
-// Flow Rate
-
-let flow =
-document.getElementById("flowRate");
+        const data = await response.json();
 
 
-if(flow){
+        console.log("Live Sensor:", data);
 
-flow.innerHTML =
-data.flow_rate + " L/min";
+
+        // --------------------------------------------------
+        // FLOW RATE
+        // --------------------------------------------------
+
+        const flow = document.getElementById("flowRate");
+
+        if (flow) {
+
+            flow.textContent =
+                `${Number(data.flow_rate).toFixed(2)} L/min`;
+
+        }
+
+
+        // --------------------------------------------------
+        // PRESSURE
+        // --------------------------------------------------
+
+        const pressure =
+            document.getElementById("pressure");
+
+        if (pressure) {
+
+            pressure.textContent =
+                `${Number(data.pressure).toFixed(2)} Pa`;
+
+        }
+
+
+        // --------------------------------------------------
+        // TEMPERATURE
+        // --------------------------------------------------
+
+        const temperature =
+            document.getElementById("temperature");
+
+        if (temperature) {
+
+            temperature.textContent =
+                `${Number(data.temperature).toFixed(2)} °C`;
+
+        }
+
+
+        // --------------------------------------------------
+        // LIVE AI PREDICTION
+        // --------------------------------------------------
+
+        const result =
+            await predictLive(data);
+
+
+        // --------------------------------------------------
+        // LIVE AI STATUS
+        // --------------------------------------------------
+
+        const sensorAIStatus =
+            document.getElementById("sensorAIStatus");
+
+
+        if (sensorAIStatus) {
+
+            sensorAIStatus.innerHTML =
+                `${result.status}<br>${result.leakage_probability}%`;
+
+            sensorAIStatus.classList.remove(
+                "status-normal",
+                "status-warning"
+            );
+
+            sensorAIStatus.classList.add(
+                getStatusClass(result.status)
+            );
+
+        }
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Sensor Error:",
+            error
+        );
+
+        setText(
+            "sensorAIStatus",
+            "API Error"
+        );
+
+    }
 
 }
 
 
-
-// Pressure
-
-let pressure =
-document.getElementById("pressure");
-
-
-if(pressure){
-
-pressure.innerHTML =
-data.pressure + " Pa";
-
-}
-
-
-
-// Temperature
-
-let temperature =
-document.getElementById("temperature");
-
-
-if(temperature){
-
-temperature.innerHTML =
-data.temperature + " °C";
-
-}
-
-
-
-// Live Status
-
-let liveStatus =
-document.getElementById("sensorAIStatus");
-
-if(liveStatus){
-
-
-let result =
-await predictLive(data);
-
-
-
-liveStatus.innerHTML =
-
-result.status +
-"<br>" +
-result.leakage_probability +
-"%";
-
-
-}
-
-
-
-}
-
-
-catch(error){
-
-console.log(
-"Sensor Error:",
-error
-);
-
-
-}
-
-
-}
-
-
-
-
-
-// =================================
+// ======================================================
 // LIVE AI PREDICTION
-// =================================
+// ======================================================
 
-async function predictLive(data){
+async function predictLive(data) {
+
+    const response = await fetch(
+
+        API + "/sensor/predict",
+
+        {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify(data)
+
+        }
+
+    );
 
 
-let response = await fetch(
+    if (!response.ok) {
 
-API+"/sensor/predict",
+        throw new Error(
+            `Prediction API Error: ${response.status}`
+        );
 
-{
+    }
 
-method:"POST",
 
-headers:{
+    const result =
+        await response.json();
 
-"Content-Type":"application/json"
 
-},
+    console.log(
+        "Live Prediction:",
+        result
+    );
 
-body:JSON.stringify(data)
+
+    // ==================================================
+    // CURRENT STATUS
+    // ==================================================
+
+    const liveStatus =
+        document.getElementById("liveStatus");
+
+
+    if (liveStatus) {
+
+        liveStatus.textContent =
+            result.status;
+
+        liveStatus.classList.remove(
+            "status-normal",
+            "status-warning"
+        );
+
+        liveStatus.classList.add(
+            getStatusClass(result.status)
+        );
+
+    }
+
+
+    // ==================================================
+    // LEAKAGE PROBABILITY
+    // ==================================================
+
+    const probability =
+        Number(
+            result.leakage_probability ?? 0
+        );
+
+
+    const liveProbability =
+        document.getElementById(
+            "liveProbability"
+        );
+
+
+    if (liveProbability) {
+
+        liveProbability.textContent =
+            `${probability}%`;
+
+    }
+
+
+    // ==================================================
+    // SEVERITY
+    // ==================================================
+
+    const liveSeverity =
+        document.getElementById(
+            "liveSeverity"
+        );
+
+
+    if (liveSeverity) {
+
+        liveSeverity.textContent =
+            result.severity || "-";
+
+    }
+
+
+    // ==================================================
+    // RISK METER
+    // ==================================================
+
+    updateRiskMeter(
+        probability
+    );
+
+
+    // ==================================================
+    // LIVE ALERT
+    // ==================================================
+
+    updateAlert(
+        result.status,
+        probability
+    );
+
+
+    // ==================================================
+    // OPTIONAL LIVE ANOMALY DATA
+    // ==================================================
+
+    updateAnomaly(
+        result
+    );
+
+
+    return result;
 
 }
 
-);
 
-
-
-let result = await response.json();
-
-
-
-// ===============================
-// Live AI Prediction Update
-// ===============================
-
-
-let liveStatus =
-document.getElementById(
-"liveStatus"
-);
-
-
-
-let liveProbability =
-document.getElementById(
-"liveProbability"
-);
-
-
-
-let liveSeverity =
-document.getElementById(
-"liveSeverity"
-);
-
-
-
-
-
-if(liveStatus){
-
-liveStatus.innerHTML =
-result.status;
-
-}
-
-
-
-
-if(liveProbability){
-
-liveProbability.innerHTML =
-result.leakage_probability + "%";
-
-}
-
-
-
-
-
-if(liveSeverity){
-
-liveSeverity.innerHTML =
-result.severity;
-
-}
-
-
-
-
-
-return result;
-
-
-}
-// =================================
+// ======================================================
 // CSV PREDICTION
-// =================================
+// ======================================================
+
+async function predict() {
+
+    const fileInput =
+        document.getElementById("file");
 
 
-async function predict(){
+    if (!fileInput || !fileInput.files.length) {
+
+        alert(
+            "Please select CSV file"
+        );
+
+        return;
+
+    }
 
 
-let file =
-document.getElementById("file").files[0];
+    const file =
+        fileInput.files[0];
 
 
+    const formData =
+        new FormData();
 
-if(!file){
 
-alert(
-"Please select CSV file"
-);
+    formData.append(
+        "file",
+        file
+    );
 
-return;
+
+    try {
+
+        const response =
+            await fetch(
+
+                API + "/predict",
+
+                {
+
+                    method: "POST",
+
+                    body: formData
+
+                }
+
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Prediction Error: ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "CSV Prediction:",
+            data
+        );
+
+
+        // ==================================================
+        // STATUS
+        // ==================================================
+
+        setText(
+            "status",
+            `Status: ${data.status}`
+        );
+
+
+        // ==================================================
+        // PROBABILITY
+        // ==================================================
+
+        setText(
+            "probability",
+            `Leakage Probability: ${data.leakage_probability}%`
+        );
+
+
+        // ==================================================
+        // SEVERITY
+        // ==================================================
+
+        setText(
+            "severity",
+            `Severity: ${data.severity}`
+        );
+
+
+        // ==================================================
+        // RISK METER
+        // ==================================================
+
+        updateRiskMeter(
+            Number(
+                data.leakage_probability ?? 0
+            )
+        );
+
+
+        // ==================================================
+        // ALERT
+        // ==================================================
+
+        updateAlert(
+            data.status,
+            Number(
+                data.leakage_probability ?? 0
+            )
+        );
+
+
+        // ==================================================
+        // ANOMALY
+        // ==================================================
+
+        updateAnomaly(
+            data
+        );
+
+
+        // ==================================================
+        // EXPLANATION
+        // ==================================================
+
+        const explanation =
+            document.getElementById(
+                "explanation"
+            );
+
+
+        if (explanation) {
+
+            explanation.innerHTML = `
+
+                <li>
+                    ✔ Sensor signal analyzed
+                </li>
+
+                <li>
+                    ✔ Pressure pattern checked
+                </li>
+
+                <li>
+                    ✔ Machine Learning model executed
+                </li>
+
+                <li>
+                    ✔ Leakage probability calculated
+                </li>
+
+                <li>
+                    ✔ Leakage severity calculated
+                </li>
+
+            `;
+
+        }
+
+
+        // ==================================================
+        // GRAPH
+        // ==================================================
+
+        if (data.signal) {
+
+            drawChart(
+                data.signal
+            );
+
+        }
+
+
+        // ==================================================
+        // HISTORY
+        // ==================================================
+
+        await loadHistory();
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "CSV Prediction Error:",
+            error
+        );
+
+
+        alert(
+            "Backend connection error. Make sure FastAPI is running."
+        );
+
+    }
 
 }
 
 
-
-let formData =
-new FormData();
-
-
-formData.append(
-"file",
-file
-);
-
-
-
-try{
-
-
-let response =
-await fetch(
-
-API+"/predict",
-
-{
-
-method:"POST",
-
-body:formData
-
-}
-
-);
-
-
-
-let data =
-await response.json();
-
-
-
-console.log(
-"Prediction:",
-data
-);
-
-
-
-
-
-// Status
-
-
-document.getElementById("status").innerHTML =
-
-"Status: "
-+
-data.status;
-
-
-
-// Probability
-
-
-document.getElementById("probability").innerHTML =
-
-"Leakage Probability: "
-+
-data.leakage_probability
-+
-"%";
-
-
-
-// Severity
-
-
-document.getElementById("severity").innerHTML =
-
-"Severity: "
-+
-data.severity;
-
-
-
-
-
-// Risk Meter
-
-
-updateRiskMeter(
-data.leakage_probability
-);
-
-
-
-
-
-
-// Alert
-
-
-updateAlert(
-data.status
-);
-
-
-
-
-
-
-
-// Explanation
-
-
-let explanation =
-document.getElementById(
-"explanation"
-);
-
-
-if(explanation){
-
-
-explanation.innerHTML = `
-
-
-<li>
-✔ Sensor signal analyzed
-</li>
-
-
-<li>
-✔ Pressure pattern checked
-</li>
-
-
-<li>
-✔ Machine Learning model executed
-</li>
-
-
-<li>
-✔ Leakage severity calculated
-</li>
-
-
-`;
-
-
-
-}
-
-
-
-
-
-// Graph
-
-
-if(data.signal){
-
-drawChart(
-data.signal
-);
-
-}
-
-
-
-
-loadHistory();
-
-
-
-}
-
-
-catch(error){
-
-
-console.log(error);
-
-
-alert(
-"Backend connection error"
-);
-
-
-}
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// =================================
+// ======================================================
 // RISK METER
-// =================================
+// ======================================================
+
+function updateRiskMeter(value) {
+
+    const probability =
+        Number(value) || 0;
 
 
-function updateRiskMeter(value){
+    const circle =
+        document.getElementById(
+            "riskCircle"
+        );
 
 
-let circle =
-document.getElementById(
-"riskCircle"
-);
+    const text =
+        document.getElementById(
+            "gaugeValue"
+        );
 
 
-let text =
-document.getElementById(
-"gaugeValue"
-);
+    if (text) {
+
+        text.textContent =
+            `${probability}%`;
+
+    }
 
 
+    if (!circle) {
 
-if(text){
+        return;
 
-text.innerHTML =
-value+"%";
+    }
+
+
+    // Remove old colors
+
+    circle.style.borderColor =
+        "";
+
+
+    // -----------------------------------------------
+    // LOW
+    // -----------------------------------------------
+
+    if (probability < 30) {
+
+        circle.style.borderColor =
+            "green";
+
+    }
+
+
+    // -----------------------------------------------
+    // MEDIUM
+    // -----------------------------------------------
+
+    else if (probability < 80) {
+
+        circle.style.borderColor =
+            "orange";
+
+    }
+
+
+    // -----------------------------------------------
+    // HIGH
+    // -----------------------------------------------
+
+    else {
+
+        circle.style.borderColor =
+            "red";
+
+    }
 
 }
 
 
-
-
-if(circle){
-
-
-
-if(value < 50){
-
-circle.style.borderColor="green";
-
-}
-
-
-else if(value < 80){
-
-circle.style.borderColor="orange";
-
-}
-
-
-else{
-
-circle.style.borderColor="red";
-
-}
-
-
-}
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// =================================
+// ======================================================
 // ALERT SYSTEM
-// =================================
+// ======================================================
+
+function updateAlert(
+    status,
+    probability = 0
+) {
+
+    const box =
+        document.getElementById(
+            "alertBox"
+        );
 
 
-function updateAlert(status){
+    const msg =
+        document.getElementById(
+            "alertMessage"
+        );
 
 
-let box =
-document.getElementById(
-"alertBox"
-);
+    const action =
+        document.getElementById(
+            "action"
+        );
 
 
-let msg =
-document.getElementById(
-"alertMessage"
-);
+    if (!box || !msg || !action) {
+
+        return;
+
+    }
 
 
-let action =
-document.getElementById(
-"action"
-);
+    const statusText =
+        String(status || "").toLowerCase();
 
 
-
-if(status==="Leakage Detected"){
-
-
-msg.innerHTML =
-"⚠️ Water Leakage Alert";
+    const leakDetected =
+        statusText.includes("leakage");
 
 
-action.innerHTML =
-"Action: Inspect pipeline immediately";
+    // ==================================================
+    // LEAKAGE
+    // ==================================================
+
+    if (leakDetected) {
+
+        msg.textContent =
+            "⚠️ Water Leakage Alert";
 
 
-box.className =
-"card alert-card alert-danger";
+        action.textContent =
+            `Action: Inspect pipeline immediately (${probability}% probability)`;
 
+
+        box.className =
+            "card alert-card alert-danger";
+
+    }
+
+
+    // ==================================================
+    // NORMAL
+    // ==================================================
+
+    else {
+
+        msg.textContent =
+            "✅ System Normal";
+
+
+        action.textContent =
+            "No action required";
+
+
+        box.className =
+            "card alert-card alert-normal";
+
+    }
 
 }
 
 
-else{
+// ======================================================
+// ANOMALY ANALYSIS
+// ======================================================
+
+function updateAnomaly(data) {
+
+    const anomalyStatus =
+        document.getElementById(
+            "anomalyStatus"
+        );
 
 
-msg.innerHTML =
-"✅ System Normal";
+    const anomalyScore =
+        document.getElementById(
+            "anomalyScore"
+        );
 
 
-action.innerHTML =
-"No action required";
+    const anomalyCount =
+        document.getElementById(
+            "anomalyCount"
+        );
 
 
-box.className =
-"card alert-card alert-normal";
+    const anomalyMessage =
+        document.getElementById(
+            "anomalyMessage"
+        );
 
+
+    // --------------------------------------------------
+    // If backend doesn't send anomaly data,
+    // keep existing dashboard stable.
+    // --------------------------------------------------
+
+    if (!data) {
+
+        return;
+
+    }
+
+
+    // --------------------------------------------------
+    // Anomaly status
+    // --------------------------------------------------
+
+    if (
+        anomalyStatus &&
+        data.anomaly_status !== undefined
+    ) {
+
+        anomalyStatus.textContent =
+            `Status: ${data.anomaly_status}`;
+
+    }
+
+
+    // --------------------------------------------------
+    // Anomaly score
+    // --------------------------------------------------
+
+    if (
+        anomalyScore &&
+        data.anomaly_score !== undefined
+    ) {
+
+        anomalyScore.textContent =
+            `Score: ${data.anomaly_score}`;
+
+    }
+
+
+    // --------------------------------------------------
+    // Anomaly count
+    // --------------------------------------------------
+
+    if (
+        anomalyCount &&
+        data.anomaly_count !== undefined
+    ) {
+
+        anomalyCount.textContent =
+            `Anomalies: ${data.anomaly_count}`;
+
+    }
+
+
+    // --------------------------------------------------
+    // Anomaly message
+    // --------------------------------------------------
+
+    if (
+        anomalyMessage &&
+        data.anomaly_message !== undefined
+    ) {
+
+        anomalyMessage.textContent =
+            data.anomaly_message;
+
+    }
 
 }
 
 
-
-}
-
-
-
-
-
-
-
-
-
-// =================================
+// ======================================================
 // GRAPH
-// =================================
+// ======================================================
+
+function drawChart(signal) {
+
+    const canvas =
+        document.getElementById(
+            "sensorChart"
+        );
 
 
-function drawChart(signal){
+    if (!canvas) {
+
+        return;
+
+    }
 
 
+    if (!Array.isArray(signal)) {
 
-let canvas =
-document.getElementById(
-"sensorChart"
-);
+        return;
 
-
-
-if(!canvas){
-
-return;
-
-}
+    }
 
 
+    if (chart) {
 
-if(chart){
+        chart.destroy();
 
-chart.destroy();
-
-}
-
+    }
 
 
+    chart =
+        new Chart(
 
-chart =
-new Chart(
+            canvas,
 
-canvas,
+            {
 
-{
+                type: "line",
 
+                data: {
 
-type:"line",
+                    labels:
+                        signal.map(
+                            (_, index) => index
+                        ),
 
+                    datasets: [
 
-data:{
+                        {
 
+                            label:
+                                "Pressure Signal",
 
-labels:
+                            data:
+                                signal,
 
-signal.map(
+                            borderWidth:
+                                2,
 
-(_,i)=>i
+                            pointRadius:
+                                0,
 
-),
+                            tension:
+                                0.3
 
+                        }
 
+                    ]
 
-datasets:[{
-
-
-label:"Pressure Signal",
-
-
-data:signal,
-
-
-borderWidth:2,
-
-
-pointRadius:0,
-
-
-tension:0.3
-
-
-}]
+                },
 
 
-},
+                options: {
 
+                    responsive: true,
 
+                    maintainAspectRatio:
+                        false,
 
-options:{
+                    animation:
+                        false
 
+                }
 
-responsive:true,
+            }
 
-
-maintainAspectRatio:false,
-
-
-animation:false
-
+        );
 
 }
 
 
-}
-
-
-);
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// =================================
+// ======================================================
 // HISTORY
-// =================================
+// ======================================================
+
+async function loadHistory() {
+
+    try {
+
+        const response =
+            await fetch(
+
+                API + "/history",
+
+                {
+                    cache: "no-store"
+                }
+
+            );
 
 
-async function loadHistory(){
+        if (!response.ok) {
+
+            throw new Error(
+                `History API Error: ${response.status}`
+            );
+
+        }
 
 
-try{
+        const data =
+            await response.json();
 
 
-let response =
-await fetch(
-
-API+"/history"
-
-);
+        const table =
+            document.getElementById(
+                "history"
+            );
 
 
+        if (!table) {
 
-let data =
-await response.json();
+            return;
 
-
-
-let table =
-document.getElementById(
-"history"
-);
+        }
 
 
+        table.innerHTML = "";
 
-if(!table){
 
-return;
+        if (!Array.isArray(data)) {
+
+            return;
+
+        }
+
+
+        data.forEach(
+            item => {
+
+                table.innerHTML += `
+
+                    <tr>
+
+                        <td>
+                            ${item.filename ?? "-"}
+                        </td>
+
+                        <td>
+                            ${item.status ?? "-"}
+                        </td>
+
+                        <td>
+                            ${item.probability ?? "-"}%
+                        </td>
+
+                        <td>
+                            ${item.severity ?? "-"}
+                        </td>
+
+                        <td>
+                            ${item.timestamp ?? "-"}
+                        </td>
+
+                    </tr>
+
+                `;
+
+            }
+        );
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "History Error:",
+            error
+        );
+
+    }
 
 }
 
 
-
-table.innerHTML="";
-
-
-
-data.forEach(item=>{
-
-
-table.innerHTML +=
-
-`
-
-<tr>
-
-<td>${item.filename}</td>
-
-<td>${item.status}</td>
-
-<td>${item.probability}%</td>
-
-<td>${item.severity}</td>
-
-<td>${item.timestamp}</td>
-
-
-</tr>
-
-`;
-
-
-
-});
-
-
-
-}
-
-
-catch(error){
-
-
-console.log(
-"History Error",
-error
-);
-
-
-}
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// =================================
+// ======================================================
 // AUTO ALERT CHECK
-// =================================
+// ======================================================
+
+async function checkAlert() {
+
+    try {
+
+        const response =
+            await fetch(
+
+                API + "/alert/status",
+
+                {
+                    cache: "no-store"
+                }
+
+            );
 
 
-async function checkAlert(){
+        if (!response.ok) {
+
+            throw new Error(
+                `Alert API Error: ${response.status}`
+            );
+
+        }
 
 
-try{
+        const data =
+            await response.json();
 
 
-let response =
-await fetch(
-
-API+"/alert/status"
-
-);
+        console.log(
+            "Alert Status:",
+            data
+        );
 
 
-
-let data =
-await response.json();
-
-
-
-let msg =
-document.getElementById(
-"alertMessage"
-);
+        const msg =
+            document.getElementById(
+                "alertMessage"
+            );
 
 
-let box =
-document.getElementById(
-"alertBox"
-);
+        const box =
+            document.getElementById(
+                "alertBox"
+            );
 
 
-
-if(data.alert){
-
-
-msg.innerHTML =
-data.message;
+        const action =
+            document.getElementById(
+                "action"
+            );
 
 
-box.className =
-"card alert-card alert-danger";
+        if (!msg || !box) {
 
+            return;
+
+        }
+
+
+        // ==================================================
+        // ALERT
+        // ==================================================
+
+        if (data.alert) {
+
+            msg.textContent =
+                data.message ||
+                "⚠️ Water Leakage Alert";
+
+
+            if (action) {
+
+                action.textContent =
+                    "Action: Inspect pipeline immediately";
+
+            }
+
+
+            box.className =
+                "card alert-card alert-danger";
+
+        }
+
+
+        // ==================================================
+        // NORMAL
+        // ==================================================
+
+        else {
+
+            msg.textContent =
+                data.message ||
+                "✅ System Normal";
+
+
+            if (action) {
+
+                action.textContent =
+                    "No action required";
+
+            }
+
+
+            box.className =
+                "card alert-card alert-normal";
+
+        }
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "Alert Error:",
+            error
+        );
+
+    }
 
 }
 
-else{
+
+// ======================================================
+// DASHBOARD STATS
+// ======================================================
+
+async function loadStats(){
+
+    try{
+
+        const response = await fetch(
+            API + "/stats",
+            {
+                cache:"no-store"
+            }
+        );
 
 
-msg.innerHTML =
-data.message;
+        if(!response.ok){
+
+            throw new Error(
+                "Stats API Error: " + response.status
+            );
+
+        }
 
 
-box.className =
-"card alert-card alert-normal";
+        const data =
+            await response.json();
 
+
+        console.log(
+            "Stats Data:",
+            data
+        );
+
+
+        setText(
+            "totalPredictions",
+            data.total_predictions
+        );
+
+
+        setText(
+            "leakageCases",
+            data.leakage_detected
+        );
+
+
+        setText(
+            "normalCases",
+            data.normal_cases
+        );
+
+
+        setText(
+            "averageRisk",
+            data.average_probability + "%"
+        );
+
+
+    }
+
+
+    catch(error){
+
+        console.error(
+            "Stats Error:",
+            error
+        );
+
+    }
 
 }
 
 
 
-}
-
-
-catch(error){
-
-
-console.log(
-"Alert Error",
-error
-);
-
-
-}
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// =================================
+// ======================================================
 // PAGE LOAD
-// =================================
+// ======================================================
+
+window.addEventListener(
+    "load",
+    async function(){
+
+        console.log(
+            "💧 Smart Water Leakage AI Dashboard Started"
+        );
 
 
-
-window.onload=function(){
-
-
-loadHistory();
+        await loadHistory();
 
 
-updateSensor();
+        await updateSensor();
 
 
-checkAlert();
+        await checkAlert();
 
 
-};
+        await loadStats();
 
 
-
-
-// Refresh Live Data
-
-setInterval(
-
-updateSensor,
-
-5000
-
+    }
 );
 
 
 
-// Refresh Alert
+// ======================================================
+// AUTO REFRESH
+// ======================================================
+
+
+// Live sensor + AI prediction
 
 setInterval(
+    updateSensor,
+    5000
+);
 
-checkAlert,
 
-5000
+// Alert status
 
+setInterval(
+    checkAlert,
+    5000
+);
+
+
+// History
+
+setInterval(
+    loadHistory,
+    15000
+);
+
+
+// Statistics
+
+setInterval(
+    loadStats,
+    15000
 );
