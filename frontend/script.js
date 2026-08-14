@@ -1116,36 +1116,39 @@ async function checkAlert() {
 // ======================================================
 // DASHBOARD STATS
 // ======================================================
+// ======================================================
+// DASHBOARD STATS
+// ======================================================
+
+
+let severityChart = null;
+
+
 
 async function loadStats(){
 
-    try{
-
-        const response = await fetch(
-            API + "/stats",
-            {
-                cache:"no-store"
-            }
-        );
+try{
 
 
-        if(!response.ok){
-
-            throw new Error(
-                "Stats API Error: " + response.status
-            );
-
-        }
+const response =
+await fetch(
+API + "/stats"
+);
 
 
-        const data =
-            await response.json();
+const data =
+await response.json();
 
 
-        console.log(
-            "Stats Data:",
-            data
-        );
+console.log(
+"Dashboard Stats:",
+data
+);
+
+
+        // ==========================
+        // SUMMARY CARDS
+        // ==========================
 
 
         setText(
@@ -1172,33 +1175,225 @@ async function loadStats(){
         );
 
 
+
+        // ==========================
+        // RECENT ANALYSIS
+        // ==========================
+
+
+        if(
+            data.recent_predictions &&
+            data.recent_predictions.length > 0
+        ){
+
+
+            const latest =
+            data.recent_predictions[0];
+
+
+
+            setText(
+                "latestFile",
+                latest.filename
+            );
+
+
+            setText(
+                "latestStatus",
+                latest.status
+            );
+
+
+            setText(
+                "latestProbability",
+                latest.probability + "%"
+            );
+
+
+            setText(
+                "latestSeverity",
+                latest.severity
+            );
+
+
+        }
+
+
+
+
+        // ==========================
+        // SEVERITY CHART
+        // ==========================
+
+
+        if(data.severity_count){
+
+
+            createSeverityChart(
+                data.severity_count
+            );
+
+
+        }
+
+
+
     }
 
 
     catch(error){
+
 
         console.error(
             "Stats Error:",
             error
         );
 
+
     }
+
 
 }
 
+
+
+
+
+// ======================================================
+// SEVERITY DISTRIBUTION CHART
+// ======================================================
+
+
+function createSeverityChart(data){
+
+    const canvas =
+    document.getElementById(
+        "severityChart"
+    );
+
+
+    if(!canvas || !data){
+        return;
+    }
+
+
+    if(severityChart){
+        severityChart.destroy();
+    }
+
+
+    severityChart = new Chart(
+
+        canvas,
+
+        {
+
+            type:"doughnut",
+
+
+            data:{
+
+                labels:[
+                    "LOW",
+                    "MEDIUM",
+                    "HIGH"
+                ],
+
+
+                datasets:[
+
+                    {
+
+                        data:[
+
+                            data.LOW || 0,
+                            data.MEDIUM || 0,
+                            data.HIGH || 0
+
+                        ],
+
+
+                        backgroundColor:[
+
+                            "#22c55e",
+                            "#facc15",
+                            "#ef4444"
+
+                        ],
+
+
+                        borderWidth:2
+
+                    }
+
+                ]
+
+            },
+
+
+            options:{
+
+                responsive:true,
+
+                maintainAspectRatio:false,
+
+
+                cutout:"55%",
+
+
+                plugins:{
+
+                    legend:{
+
+                        position:"bottom",
+
+                        labels:{
+
+                            boxWidth:15,
+
+                            padding:15,
+
+                            font:{
+
+                                size:13
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+
+        }
+
+    );
+
+}
 
 
 // ======================================================
 // PAGE LOAD
 // ======================================================
 
+
 window.addEventListener(
+
     "load",
+
     async function(){
+
 
         console.log(
             "💧 Smart Water Leakage AI Dashboard Started"
         );
+
+
+
+        await loadStats();
 
 
         await loadHistory();
@@ -1210,11 +1405,12 @@ window.addEventListener(
         await checkAlert();
 
 
-        await loadStats();
-
 
     }
+
 );
+
+
 
 
 
@@ -1223,33 +1419,49 @@ window.addEventListener(
 // ======================================================
 
 
-// Live sensor + AI prediction
+
+// Sensor + AI prediction
 
 setInterval(
+
     updateSensor,
+
     5000
+
 );
 
 
-// Alert status
+
+// Alert
 
 setInterval(
+
     checkAlert,
+
     5000
+
 );
+
 
 
 // History
 
 setInterval(
+
     loadHistory,
+
     15000
+
 );
 
 
-// Statistics
+
+// Stats
 
 setInterval(
+
     loadStats,
+
     15000
+
 );

@@ -684,7 +684,49 @@ def sensor_predict(
     severity = get_severity(
         probability_decimal
     )
+  
+    # ==================================
+    # Save Live Prediction History
+    # Only save high risk events
+    # ==================================
 
+    if probability_decimal >= 0.60:
+
+        conn = sqlite3.connect(
+            DB_PATH
+        )
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO history
+            (
+                filename,
+                status,
+                probability,
+                severity,
+                timestamp
+            )
+
+            VALUES (?, ?, ?, ?, ?)
+            """,
+
+            (
+                "LIVE_SENSOR",
+                status,
+                float(probability),
+                severity,
+                datetime.now().strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+            )
+
+        )
+
+        conn.commit()
+
+        conn.close()
 
     # ==================================
     # Response
@@ -871,7 +913,8 @@ def alert_status():
         )
 
     }
-    # ==========================================
+
+# ==========================================
 # Dashboard Statistics
 # ==========================================
 
@@ -938,33 +981,132 @@ def stats():
     avg_probability = cursor.fetchone()[0]
 
 
-    conn.close()
-
-
     if avg_probability is None:
 
         avg_probability = 0
 
 
 
+    # Severity Analysis
+
+    cursor.execute(
+        """
+        SELECT severity, COUNT(*)
+        FROM history
+        GROUP BY severity
+        """
+    )
+
+
+    severity_rows = cursor.fetchall()
+
+
+
+    severity_count = {
+
+        "LOW":0,
+
+        "MEDIUM":0,
+
+        "HIGH":0
+
+    }
+
+
+
+    for row in severity_rows:
+
+        severity_count[row[0]] = row[1]
+
+
+
+    # Recent predictions
+
+    cursor.execute(
+        """
+        SELECT
+        filename,
+        status,
+        probability,
+        severity,
+        timestamp
+
+        FROM history
+
+        ORDER BY id DESC
+
+        LIMIT 5
+
+        """
+    )
+
+
+    rows = cursor.fetchall()
+
+
+    recent_predictions=[]
+
+
+    for row in rows:
+
+
+        recent_predictions.append(
+
+            {
+
+            "filename":row[0],
+
+            "status":row[1],
+
+            "probability":float(row[2]),
+
+            "severity":row[3],
+
+            "timestamp":row[4]
+
+            }
+
+        )
+
+
+
+    conn.close()
+
+
+
     return {
 
+
         "total_predictions":
+
         total_predictions,
 
 
         "leakage_detected":
+
         leakage_detected,
 
 
         "normal_cases":
+
         normal_cases,
 
 
         "average_probability":
+
         round(
-            avg_probability,
+            float(avg_probability),
             2
-        )
+        ),
+
+
+        "severity_count":
+
+        severity_count,
+
+
+        "recent_predictions":
+
+        recent_predictions
 
     }

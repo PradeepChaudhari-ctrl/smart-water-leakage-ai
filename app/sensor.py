@@ -2,41 +2,96 @@ import random
 from datetime import datetime
 
 
-
 def generate_sensor_data():
 
-
-    flow_rate = round(
-        random.uniform(2,8),
-        2
+    # Random situation generate
+    condition = random.choice(
+        [
+            "normal",
+            "normal",
+            "normal",
+            "warning",
+            "leakage"
+        ]
     )
 
 
-    pressure = round(
-        random.uniform(1800,2600),
-        2
-    )
+    # ==========================
+    # NORMAL PIPELINE
+    # ==========================
 
+    if condition == "normal":
 
-    temperature = round(
-        random.uniform(22,30),
-        2
-    )
+        flow_rate = round(
+            random.uniform(3,6),
+            2
+        )
 
+        pressure = round(
+            random.uniform(2200,2600),
+            2
+        )
 
-
-    if pressure < 2000 or flow_rate > 7:
-
-        status = "Warning"
-
-    else:
+        temperature = round(
+            random.uniform(22,27),
+            2
+        )
 
         status = "Normal"
 
 
 
-    return {
+    # ==========================
+    # WARNING CONDITION
+    # ==========================
 
+    elif condition == "warning":
+
+        flow_rate = round(
+            random.uniform(6,7.5),
+            2
+        )
+
+        pressure = round(
+            random.uniform(1900,2200),
+            2
+        )
+
+        temperature = round(
+            random.uniform(27,30),
+            2
+        )
+
+        status = "Warning"
+
+
+
+    # ==========================
+    # LEAKAGE CONDITION
+    # ==========================
+
+    else:
+
+        flow_rate = round(
+            random.uniform(8,12),
+            2
+        )
+
+        pressure = round(
+            random.uniform(1000,1700),
+            2
+        )
+
+        temperature = round(
+            random.uniform(30,35),
+            2
+        )
+
+        status = "Leakage"
+
+
+
+    return {
 
         "timestamp":
         datetime.now().strftime(

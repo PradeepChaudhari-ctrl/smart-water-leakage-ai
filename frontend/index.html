@@ -59,201 +59,178 @@
 <main class="dashboard-container">
 <!-- Dashboard Analytics -->
 
-<div class="card">
-
-<h2>
-📊 System Analytics
-</h2>
-
-
-<div class="summary">
-
-
-<div class="box">
-
-<h3>
-Total Predictions
-</h3>
-
-<p id="totalPredictions">
--
-</p>
-
-</div>
-
-
-
-<div class="box">
-
-<h3>
-🚨 Leakage Cases
-</h3>
-
-<p id="leakageCases">
--
-</p>
-
-</div>
-
-
-
-<div class="box">
-
-<h3>
-✅ Normal Cases
-</h3>
-
-<p id="normalCases">
--
-</p>
-
-</div>
-
-
-
-<div class="box">
-
-<h3>
-Average Risk
-</h3>
-
-<p id="averageRisk">
--
-</p>
-
-</div>
-
-
-</div>
-
-</div>
-
 <!-- =====================================================
-     SENSOR OVERVIEW
+     SYSTEM ANALYTICS
 ===================================================== -->
 
 <section class="section">
 
-    <div class="section-title">
 
-        <div>
-
-            <span class="eyebrow">
-                REAL-TIME MONITORING
-            </span>
-
-            <h2>
-                Sensor Overview
-            </h2>
-
-        </div>
-
-        <span class="live-badge">
-            ● LIVE
-        </span>
-
-    </div>
+<div class="section-title">
 
 
-    <div class="metric-grid">
+<div>
+
+<span class="eyebrow">
+SYSTEM ANALYTICS
+</span>
 
 
-        <!-- FLOW -->
-
-        <div class="metric-card">
-
-            <div class="metric-icon">
-                💧
-            </div>
-
-            <div>
-
-                <span class="metric-label">
-                    Flow Rate
-                </span>
-
-                <strong id="flowRate">
-                    -
-                </strong>
-
-            </div>
-
-        </div>
+<h2>
+📊 AI Monitoring Overview
+</h2>
 
 
-        <!-- PRESSURE -->
-
-        <div class="metric-card">
-
-            <div class="metric-icon">
-                ⚙️
-            </div>
-
-            <div>
-
-                <span class="metric-label">
-                    Pressure
-                </span>
-
-                <strong id="pressure">
-                    -
-                </strong>
-
-            </div>
-
-        </div>
+</div>
 
 
-        <!-- TEMPERATURE -->
 
-        <div class="metric-card">
-
-            <div class="metric-icon">
-                🌡️
-            </div>
-
-            <div>
-
-                <span class="metric-label">
-                    Temperature
-                </span>
-
-                <strong id="temperature">
-                    -
-                </strong>
-
-            </div>
-
-        </div>
+<span class="live-badge">
+● UPDATED
+</span>
 
 
-        <!-- AI STATUS -->
-
-        <div class="metric-card ai-card">
-
-            <div class="metric-icon">
-                🤖
-            </div>
-
-            <div>
-
-                <span class="metric-label">
-                    AI Monitoring
-                </span>
-
-                <strong id="sensorAIStatus">
-                    -
-                </strong>
-
-            </div>
-
-        </div>
+</div>
 
 
-    </div>
+
+
+<div class="metric-grid">
+
+
+
+<!-- TOTAL PREDICTIONS -->
+
+<div class="metric-card">
+
+
+<div class="metric-icon">
+📊
+</div>
+
+
+<div>
+
+
+<span class="metric-label">
+Total Predictions
+</span>
+
+
+<strong id="totalPredictions">
+-
+</strong>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- LEAKAGE CASES -->
+
+<div class="metric-card danger-card">
+
+
+<div class="metric-icon">
+🚨
+</div>
+
+
+<div>
+
+
+<span class="metric-label">
+Leakage Cases
+</span>
+
+
+<strong id="leakageCases">
+-
+</strong>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+<!-- NORMAL CASES -->
+
+<div class="metric-card success-card">
+
+
+<div class="metric-icon">
+✅
+</div>
+
+
+<div>
+
+
+<span class="metric-label">
+Normal Cases
+</span>
+
+
+<strong id="normalCases">
+-
+</strong>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+<!-- AVERAGE RISK -->
+
+<div class="metric-card ai-card">
+
+
+<div class="metric-icon">
+⚠️
+</div>
+
+
+<div>
+
+
+<span class="metric-label">
+Average Risk
+</span>
+
+
+<strong id="averageRisk">
+-
+</strong>
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
 
 </section>
-
 
 
 <!-- =====================================================
@@ -395,6 +372,89 @@ Average Risk
         </p>
 
     </div>
+
+</section>
+
+<!-- =====================================================
+     ANALYTICS INSIGHTS
+===================================================== -->
+
+<section class="two-column">
+
+
+<div class="card">
+
+<span class="eyebrow">
+LATEST DETECTION
+</span>
+
+
+<h2>
+📋 Recent Analysis
+</h2>
+
+
+<p>
+File:
+<strong id="latestFile">
+-
+</strong>
+</p>
+
+
+<p>
+Status:
+<strong id="latestStatus">
+-
+</strong>
+</p>
+
+
+<p>
+Probability:
+<strong id="latestProbability">
+-
+</strong>
+</p>
+
+
+<p>
+Severity:
+<strong id="latestSeverity">
+-
+</strong>
+</p>
+
+
+</div>
+
+
+
+<div class="card">
+
+
+<span class="eyebrow">
+SEVERITY ANALYTICS
+</span>
+
+
+<h2>
+📊 Risk Distribution
+</h2>
+
+<div class="chart-box severity-chart-box">
+
+    <canvas id="severityChart"></canvas>
+
+</div>
+</div>
+
+</div>
+
+
+</div>
+
+
 
 </section>
 
