@@ -155,17 +155,17 @@ def create_database():
 
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS history (
+        CREATE TABLE IF NOT EXISTS sensor_data (
 
             id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-            filename TEXT,
+            flow_rate REAL,
+
+            pressure REAL,
+
+            temperature REAL,
 
             status TEXT,
-
-            probability REAL,
-
-            severity TEXT,
 
             timestamp TEXT
 
@@ -563,6 +563,40 @@ def history():
 def live_sensor():
 
     data = generate_sensor_data()
+    conn = sqlite3.connect(
+        DB_PATH
+    )
+
+    cursor = conn.cursor()
+
+
+    cursor.execute(
+        """
+        INSERT INTO sensor_data
+        (
+            flow_rate,
+            pressure,
+            temperature,
+            status,
+            timestamp
+        )
+
+        VALUES (?, ?, ?, ?, ?)
+        """,
+
+        (
+            data["flow_rate"],
+            data["pressure"],
+            data["temperature"],
+            data["status"],
+            data["timestamp"]
+        )
+    )
+
+
+    conn.commit()
+
+    conn.close()
 
     return {
 
@@ -582,7 +616,67 @@ def live_sensor():
         str(data["status"])
 
     }
+# ==========================================
+# Sensor History
+# ==========================================
 
+@app.get("/sensor/history")
+def sensor_history():
+
+    conn = sqlite3.connect(
+        DB_PATH
+    )
+
+    cursor = conn.cursor()
+
+
+    cursor.execute(
+        """
+        SELECT
+            flow_rate,
+            pressure,
+            temperature,
+            status,
+            timestamp
+
+        FROM sensor_data
+
+        ORDER BY id DESC
+
+        LIMIT 100
+        """
+    )
+
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+
+    result = []
+
+
+    for row in rows:
+
+        result.append(
+
+            {
+                "flow_rate": float(row[0]),
+
+                "pressure": float(row[1]),
+
+                "temperature": float(row[2]),
+
+                "status": row[3],
+
+                "timestamp": row[4]
+
+            }
+
+        )
+
+
+    return result
 
 # ==========================================
 # Live Sensor Prediction

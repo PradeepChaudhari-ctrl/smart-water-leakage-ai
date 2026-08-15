@@ -3,73 +3,92 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Smart Water Leakage AI</title>
+<title>
+Smart Water Leakage AI
+</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<link rel="stylesheet" href="style.css">
+
 
 </head>
 
 
 <body>
 
+
 <!-- =====================================================
-     HEADER
+HEADER
 ===================================================== -->
+
 
 <header class="dashboard-header">
 
-    <div>
 
-        <div class="brand">
-            💧 Smart Water Leakage AI
-        </div>
-
-        <p>
-            Intelligent Water Monitoring & Leakage Detection
-        </p>
-
-    </div>
+<div>
 
 
-    <div class="system-status">
+<div class="brand">
+💧 Smart Water Leakage AI
+</div>
 
-        <span class="status-dot"></span>
 
-        <span>
-            SYSTEM ONLINE
-        </span>
+<p>
+Intelligent Water Monitoring & Leakage Detection
+</p>
 
-    </div>
+
+</div>
+
+
+
+<div class="system-status">
+
+
+<span class="status-dot"></span>
+
+
+<span>
+SYSTEM ONLINE
+</span>
+
+
+</div>
+
 
 </header>
 
 
+
+
+
 <main class="dashboard-container">
-<!-- Dashboard Analytics -->
+
+
+
+
 
 <!-- =====================================================
-     SYSTEM ANALYTICS
+SYSTEM ANALYTICS
 ===================================================== -->
 
+
 <section class="section">
+
 
 
 <div class="section-title">
 
 
 <div>
+
 
 <span class="eyebrow">
 SYSTEM ANALYTICS
@@ -95,11 +114,10 @@ SYSTEM ANALYTICS
 
 
 
+
 <div class="metric-grid">
 
 
-
-<!-- TOTAL PREDICTIONS -->
 
 <div class="metric-card">
 
@@ -110,7 +128,6 @@ SYSTEM ANALYTICS
 
 
 <div>
-
 
 <span class="metric-label">
 Total Predictions
@@ -130,8 +147,6 @@ Total Predictions
 
 
 
-
-<!-- LEAKAGE CASES -->
 
 <div class="metric-card danger-card">
 
@@ -164,8 +179,6 @@ Leakage Cases
 
 
 
-<!-- NORMAL CASES -->
-
 <div class="metric-card success-card">
 
 
@@ -196,8 +209,6 @@ Normal Cases
 
 
 
-
-<!-- AVERAGE RISK -->
 
 <div class="metric-card ai-card">
 
@@ -233,160 +244,252 @@ Average Risk
 </section>
 
 
+
+
+
+
+
 <!-- =====================================================
-     AI PREDICTION
+AI PREDICTION
 ===================================================== -->
+
 
 <section class="prediction-layout">
 
 
-    <!-- MAIN PREDICTION -->
-
-    <div class="prediction-card">
-
-        <div class="prediction-header">
-
-            <div>
-
-                <span class="eyebrow">
-                    MACHINE LEARNING
-                </span>
-
-                <h2>
-                    Live AI Prediction
-                </h2>
-
-            </div>
-
-            <span class="ai-badge">
-                AI ACTIVE
-            </span>
-
-        </div>
-
-
-        <div class="prediction-content">
-
-
-            <div class="prediction-status">
-
-                <span>
-                    CURRENT STATUS
-                </span>
-
-                <strong id="liveStatus">
-                    -
-                </strong>
-
-            </div>
-
-
-            <div class="prediction-stat">
-
-                <span>
-                    LEAKAGE PROBABILITY
-                </span>
-
-                <strong id="liveProbability">
-                    -
-                </strong>
-
-            </div>
-
-
-            <div class="prediction-stat">
-
-                <span>
-                    RISK LEVEL
-                </span>
-
-                <strong id="liveSeverity">
-                    -
-                </strong>
-
-            </div>
-
-
-        </div>
-
-    </div>
 
 
 
-    <!-- RISK GAUGE -->
+<div class="prediction-card">
 
-    <div class="gauge-card">
 
-        <span class="eyebrow">
-            RISK SCORE
-        </span>
 
-        <div class="risk-meter">
+<div class="prediction-header">
 
-            <div id="riskCircle">
 
-                <span id="gaugeValue">
-                    0%
-                </span>
+<div>
 
-            </div>
 
-        </div>
+<span class="eyebrow">
+MACHINE LEARNING
+</span>
 
-        <span class="gauge-label">
-            Leakage Probability
-        </span>
 
-    </div>
+<h2>
+Live AI Prediction
+</h2>
+
+
+</div>
+
+
+
+<span class="ai-badge">
+AI ACTIVE
+</span>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="prediction-content">
+
+
+
+<div class="prediction-status">
+
+
+<span>
+CURRENT STATUS
+</span>
+
+
+<strong id="liveStatus">
+-
+</strong>
+
+
+</div>
+
+
+
+
+
+<div class="prediction-stat">
+
+
+<span>
+LEAKAGE PROBABILITY
+</span>
+
+
+<strong id="liveProbability">
+-
+</strong>
+
+
+</div>
+
+
+
+
+
+<div class="prediction-stat">
+
+
+<span>
+RISK LEVEL
+</span>
+
+
+<strong id="liveSeverity">
+-
+</strong>
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- RISK GAUGE -->
+
+
+<div class="gauge-card">
+
+
+<span class="eyebrow">
+RISK SCORE
+</span>
+
+
+
+
+<div class="risk-meter">
+
+
+<div id="riskCircle">
+
+
+<span id="gaugeValue">
+0%
+</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<span class="gauge-label">
+Leakage Probability
+</span>
+
+
+
+</div>
+
 
 
 </section>
 
 
 
+
+
+
+
+
 <!-- =====================================================
-     ALERT SYSTEM
+ALERT SYSTEM
 ===================================================== -->
 
-<section
-    class="alert-card card"
-    id="alertBox"
+
+<section 
+class="alert-card card"
+id="alertBox"
 >
 
-    <div class="alert-icon">
-        🚨
-    </div>
 
-    <div class="alert-content">
 
-        <span class="eyebrow">
-            ALERT SYSTEM
-        </span>
+<div class="alert-icon">
+🚨
+</div>
 
-        <h2 id="alertMessage">
-            No Alert
-        </h2>
 
-        <p id="action">
-            -
-        </p>
 
-    </div>
+
+<div class="alert-content">
+
+
+<span class="eyebrow">
+ALERT SYSTEM
+</span>
+
+
+
+<h2 id="alertMessage">
+No Alert
+</h2>
+
+
+
+
+<p id="action">
+-
+</p>
+
+
+
+</div>
+
+
 
 </section>
 
+
+
+
+
+
+
+
+
 <!-- =====================================================
-     ANALYTICS INSIGHTS
+ANALYTICS INSIGHTS
 ===================================================== -->
+
 
 <section class="two-column">
 
 
+
 <div class="card">
+
 
 <span class="eyebrow">
 LATEST DETECTION
 </span>
+
 
 
 <h2>
@@ -394,39 +497,61 @@ LATEST DETECTION
 </h2>
 
 
+
+
 <p>
 File:
+
 <strong id="latestFile">
 -
 </strong>
+
 </p>
+
+
 
 
 <p>
 Status:
+
 <strong id="latestStatus">
 -
 </strong>
+
 </p>
+
+
 
 
 <p>
 Probability:
+
 <strong id="latestProbability">
 -
 </strong>
+
 </p>
+
+
 
 
 <p>
 Severity:
+
 <strong id="latestSeverity">
 -
 </strong>
+
 </p>
 
 
+
+
 </div>
+
+
+
+
 
 
 
@@ -438,312 +563,585 @@ SEVERITY ANALYTICS
 </span>
 
 
+
 <h2>
 📊 Risk Distribution
 </h2>
 
+
+
+
 <div class="chart-box severity-chart-box">
 
-    <canvas id="severityChart"></canvas>
 
-</div>
-</div>
-
-</div>
+<canvas id="severityChart">
+</canvas>
 
 
 </div>
+
+
+
+</div>
+
 
 
 
 </section>
-
-
-
 <!-- =====================================================
-     CSV UPLOAD
+CSV UPLOAD
 ===================================================== -->
+
 
 <section class="card upload-card">
 
-    <div>
 
-        <span class="eyebrow">
-            SENSOR DATA ANALYSIS
-        </span>
-
-        <h2>
-            Analyze Sensor Data
-        </h2>
-
-        <p>
-            Upload a CSV sensor file to run the leakage
-            detection model.
-        </p>
-
-    </div>
+<div>
 
 
-    <div class="upload-controls">
+<span class="eyebrow">
+SENSOR DATA ANALYSIS
+</span>
 
-        <input
-            type="file"
-            id="file"
-            accept=".csv"
-        >
 
-        <button onclick="predict()">
-            Analyze Data
-        </button>
+<h2>
+Analyze Sensor Data
+</h2>
 
-    </div>
+
+
+<p>
+Upload a CSV sensor file to run the leakage detection model.
+</p>
+
+
+</div>
+
+
+
+
+<div class="upload-controls">
+
+
+<input
+type="file"
+id="file"
+accept=".csv"
+/>
+
+
+
+<button onclick="predict()">
+
+Analyze Data
+
+</button>
+
+
+
+</div>
+
+
 
 </section>
 
 
 
+
+
+
+
+
 <!-- =====================================================
-     CSV RESULT
+CSV RESULT
 ===================================================== -->
+
 
 <section class="card">
 
-    <div class="section-title">
 
-        <div>
-
-            <span class="eyebrow">
-                ANALYSIS RESULT
-            </span>
-
-            <h2>
-                AI Prediction Summary
-            </h2>
-
-        </div>
-
-    </div>
+<div class="section-title">
 
 
-    <div class="summary-grid">
+<div>
 
 
-        <div class="result-card">
-
-            <span>
-                STATUS
-            </span>
-
-            <strong id="status">
-                -
-            </strong>
-
-        </div>
+<span class="eyebrow">
+ANALYSIS RESULT
+</span>
 
 
-        <div class="result-card">
 
-            <span>
-                PROBABILITY
-            </span>
-
-            <strong id="probability">
-                -
-            </strong>
-
-        </div>
+<h2>
+AI Prediction Summary
+</h2>
 
 
-        <div class="result-card">
 
-            <span>
-                SEVERITY
-            </span>
-
-            <strong id="severity">
-                -
-            </strong>
-
-        </div>
+</div>
 
 
-    </div>
+</div>
+
+
+
+
+
+
+
+<div class="summary-grid">
+
+
+
+
+
+<div class="result-card">
+
+
+<span>
+STATUS
+</span>
+
+
+<strong id="status">
+-
+</strong>
+
+
+
+</div>
+
+
+
+
+
+<div class="result-card">
+
+
+<span>
+PROBABILITY
+</span>
+
+
+<strong id="probability">
+-
+</strong>
+
+
+
+</div>
+
+
+
+
+
+<div class="result-card">
+
+
+<span>
+SEVERITY
+</span>
+
+
+<strong id="severity">
+-
+</strong>
+
+
+
+</div>
+
+
+
+</div>
+
+
 
 </section>
 
 
 
+
+
+
+
+
+
 <!-- =====================================================
-     CHART
+PRESSURE SIGNAL CHART
 ===================================================== -->
+
 
 <section class="card">
 
-    <div class="section-title">
-
-        <div>
-
-            <span class="eyebrow">
-                SENSOR SIGNAL
-            </span>
-
-            <h2>
-                Pressure Signal Analysis
-            </h2>
-
-        </div>
-
-    </div>
 
 
-    <div class="chart-box">
+<div class="section-title">
 
-        <canvas id="sensorChart"></canvas>
 
-    </div>
+<div>
+
+
+<span class="eyebrow">
+SENSOR SIGNAL
+</span>
+
+
+
+<h2>
+Pressure Signal Analysis
+</h2>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="chart-box">
+
+
+<canvas id="sensorChart"></canvas>
+
+
+</div>
+
+
 
 </section>
 
 
 
+
+
+
+
+
+
 <!-- =====================================================
-     ANOMALY + EXPLANATION
+LIVE SENSOR GRAPH
 ===================================================== -->
+
+
+<section class="card">
+
+
+<div class="section-title">
+
+
+<div>
+
+
+<span class="eyebrow">
+LIVE SENSOR MONITORING
+</span>
+
+
+
+<h2>
+📈 Real-Time Sensor Data
+</h2>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="chart-box">
+
+
+<canvas id="liveSensorChart"></canvas>
+
+
+</div>
+
+
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<!-- =====================================================
+ANOMALY + EXPLANATION
+===================================================== -->
+
 
 <section class="two-column">
 
 
-    <div class="card">
-
-        <span class="eyebrow">
-            ARTIFICIAL INTELLIGENCE
-        </span>
-
-        <h2>
-            🧠 Anomaly Analysis
-        </h2>
-
-        <p id="anomalyStatus">
-            -
-        </p>
-
-        <p id="anomalyScore">
-            -
-        </p>
-
-        <p id="anomalyCount">
-            -
-        </p>
-
-        <p id="anomalyMessage">
-            -
-        </p>
-
-    </div>
 
 
 
-    <div class="card">
+<div class="card">
 
-        <span class="eyebrow">
-            MODEL EXPLANATION
-        </span>
 
-        <h2>
-            🧠 AI Explanation
-        </h2>
+<span class="eyebrow">
+ARTIFICIAL INTELLIGENCE
+</span>
 
-        <ul id="explanation"></ul>
 
-    </div>
+
+<h2>
+🧠 Anomaly Analysis
+</h2>
+
+
+
+
+<p id="anomalyStatus">
+-
+</p>
+
+
+
+<p id="anomalyScore">
+-
+</p>
+
+
+
+<p id="anomalyCount">
+-
+</p>
+
+
+
+<p id="anomalyMessage">
+-
+</p>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div class="card">
+
+
+<span class="eyebrow">
+MODEL EXPLANATION
+</span>
+
+
+
+
+<h2>
+🧠 AI Explanation
+</h2>
+
+
+
+
+<ul id="explanation">
+
+</ul>
+
+
+
+
+</div>
+
+
+
 
 
 </section>
+
+
+
+
+
+
 
 
 
 <!-- =====================================================
-     HISTORY
+HISTORY
 ===================================================== -->
+
 
 <section class="card">
 
-    <div class="section-title">
 
-        <div>
-
-            <span class="eyebrow">
-                MONITORING HISTORY
-            </span>
-
-            <h2>
-                📜 Recent Predictions
-            </h2>
-
-        </div>
-
-    </div>
+<div class="section-title">
 
 
-    <div class="table-wrapper">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        File
-                    </th>
-
-                    <th>
-                        Status
-                    </th>
-
-                    <th>
-                        Probability
-                    </th>
-
-                    <th>
-                        Severity
-                    </th>
-
-                    <th>
-                        Time
-                    </th>
-
-                </tr>
-
-            </thead>
+<div>
 
 
-            <tbody id="history"></tbody>
+<span class="eyebrow">
+MONITORING HISTORY
+</span>
 
-        </table>
 
-    </div>
+
+<h2>
+📜 Recent Predictions
+</h2>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="table-wrapper">
+
+
+
+<table>
+
+
+
+<thead>
+
+
+<tr>
+
+
+<th>
+File
+</th>
+
+
+<th>
+Status
+</th>
+
+
+<th>
+Probability
+</th>
+
+
+<th>
+Severity
+</th>
+
+
+<th>
+Time
+</th>
+
+
+
+</tr>
+
+
+</thead>
+
+
+
+
+
+<tbody id="history">
+
+
+</tbody>
+
+
+
+
+
+</table>
+
+
+
+
+</div>
+
+
+
+
 
 </section>
+
+
+
+
+
+
+
 
 
 </main>
 
 
 
+
+
+
+
+
+
+<!-- =====================================================
+FOOTER
+===================================================== -->
+
+
 <footer>
 
-    <p>
-        Smart Water Leakage AI
-        <span>•</span>
-        Real-Time Intelligent Monitoring
-    </p>
+
+<p>
+
+Smart Water Leakage AI
+
+<span>
+•
+</span>
+
+Real-Time Intelligent Monitoring
+
+
+</p>
+
 
 </footer>
 
 
+
+
+
+
+
+
 <script src="script.js"></script>
 
+
+
 </body>
+
 
 </html>

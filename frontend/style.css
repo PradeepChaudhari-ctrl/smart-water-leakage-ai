@@ -757,11 +757,11 @@ button:hover {
 }
 
 
-canvas {
 
-    width: 100% !important;
 
-    height: 100% !important;
+ canvas {
+
+    max-width:100%;
 
 }
 
@@ -1107,13 +1107,15 @@ max-height:320px;
 
     max-height:250px;
 
-}.severity-chart-box{
+}/* ================================
+   Severity Chart
+================================ */
 
-    width:420px;
+.severity-chart-box{
 
-    height:350px;
+    width:100%;
 
-    margin:auto;
+    height:300px;
 
     display:flex;
 
@@ -1126,22 +1128,9 @@ max-height:320px;
 
 #severityChart{
 
-    width:320px !important;
+    width:260px !important;
 
-    height:320px !important;
-
-}#severityChart{
-
-    width:100% !important;
-
-    height:100% !important;
-
-}
-
-
-.card canvas{
-
-    max-height:350px;
+    height:260px !important;
 
 }#severityChart{
 
@@ -1156,14 +1145,57 @@ max-height:320px;
 
     max-height:350px;
 
-}.severity-chart-box{
+}/* ================================
+   CHART FIX
+================================ */
 
+
+.chart-box{
+
+    width:100%;
     height:350px;
+
+}
+
+
+canvas{
+
+    max-width:100%;
+}
+
+
+
+/* Severity Doughnut Chart */
+
+.severity-chart-box{
+
+    height:300px;
 
     display:flex;
 
     justify-content:center;
 
     align-items:center;
+
+}
+
+
+#severityChart{
+
+    width:260px !important;
+
+    height:260px !important;
+
+}
+
+
+
+/* Live Sensor Chart */
+
+#liveSensorChart{
+
+    width:100% !important;
+
+    height:300% !important;
 
 }
