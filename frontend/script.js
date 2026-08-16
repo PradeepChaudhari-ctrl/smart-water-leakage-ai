@@ -384,17 +384,17 @@ async function predictLive(data){
 
     // ANOMALY
 
-    updateAnomaly(result);
-    updateExplanation(result);
-    function updateAnomaly(data)
+updateAnomaly(result);
+
+updateExplanation(result);
 
 
-
-    return result;
-
+return result;
+    
 
 
 }
+
 
 
 
@@ -584,51 +584,37 @@ function updateAlert(status, probability=0){
 
 function updateAnomaly(data){
 
-
-    if(!data){
-
+    if(!data || !data.anomaly){
         return;
-
     }
 
 
+    const anomaly = data.anomaly;
+
 
     setText(
-
         "anomalyStatus",
-
-        data.anomaly_status || "-"
-
+        anomaly.status || "-"
     );
 
 
-
     setText(
-
         "anomalyScore",
-
-        data.anomaly_score || "-"
-
+        anomaly.anomaly_score + "%" || "-"
     );
 
 
-
     setText(
-
         "anomalyCount",
-
-        data.anomaly_count || "-"
-
+        anomaly.anomaly_count || "-"
     );
 
 
-
     setText(
-
         "anomalyMessage",
-
-        data.anomaly_message || "-"
-
+        anomaly.status === "Normal"
+        ? "No abnormal pattern detected"
+        : "Abnormal sensor pattern detected"
     );
 
 }
