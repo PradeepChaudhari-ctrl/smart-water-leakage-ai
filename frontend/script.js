@@ -111,13 +111,12 @@ async function updateSensor(){
 
         // FLOW
 
-        setText(
+        // FLOW
 
-            "flowRate",
-
-            `${Number(data.flow_rate).toFixed(2)} L/min`
-
-        );
+setText(
+    "flow",
+    `${Number(data.flow_rate).toFixed(2)} L/min`
+);
 
 
 
@@ -386,7 +385,8 @@ async function predictLive(data){
     // ANOMALY
 
     updateAnomaly(result);
-
+    updateExplanation(result);
+    function updateAnomaly(data)
 
 
 
@@ -630,6 +630,42 @@ function updateAnomaly(data){
         data.anomaly_message || "-"
 
     );
+
+}
+// ======================================================
+// AI EXPLANATION
+// ======================================================
+
+function updateExplanation(data){
+
+    const box =
+    document.getElementById(
+        "explanation"
+    );
+
+
+    if(!box){
+        return;
+    }
+
+
+    box.innerHTML = "";
+
+
+    if(data.explanation){
+
+        data.explanation.forEach(item=>{
+
+            box.innerHTML +=
+            `
+            <li>
+                ${item}
+            </li>
+            `;
+
+        });
+
+    }
 
 }
 // ======================================================

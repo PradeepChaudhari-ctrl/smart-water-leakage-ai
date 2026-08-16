@@ -6,11 +6,76 @@ import pickle
 
 import numpy as np
 import pandas as pd
+# ==========================================
+# AI Explanation Generator
+# ==========================================
+
+def generate_explanation(
+    probability,
+    severity,
+    status
+):
+
+    explanation = []
+
+
+    if probability >= 70:
+
+        explanation.append(
+            "High leakage probability detected"
+        )
+
+        explanation.append(
+            "Sensor pattern shows abnormal behavior"
+        )
+
+
+    elif probability >= 30:
+
+        explanation.append(
+            "Moderate risk detected"
+        )
+
+        explanation.append(
+            "Continuous monitoring recommended"
+        )
+
+
+    else:
+
+        explanation.append(
+            "Sensor values are within normal range"
+        )
+
+        explanation.append(
+            "No significant leakage pattern detected"
+        )
+
+
+    explanation.append(
+        f"Risk classification: {severity}"
+    )
+
+
+    explanation.append(
+        f"AI decision: {status}"
+    )
+
+
+    return explanation
 
 from datetime import datetime
 
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+class SensorInput(BaseModel):
+
+    flow_rate: float
+
+    pressure: float
+
+    temperature: float
 
 # ==========================================
 # Add src path
@@ -46,7 +111,6 @@ from ml.anomaly_detector import (
 from app.sensor import (
     generate_sensor_data
 )
-
 
 # ==========================================
 # FastAPI Application
@@ -154,23 +218,23 @@ def create_database():
     cursor = conn.cursor()
 
     cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS sensor_data (
+    """
+    CREATE TABLE IF NOT EXISTS sensor_data (
 
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-            flow_rate REAL,
+        flow_rate REAL,
 
-            pressure REAL,
+        pressure REAL,
 
-            temperature REAL,
+        temperature REAL,
 
-            status TEXT,
+        status TEXT,
 
-            timestamp TEXT
+        timestamp TEXT
 
-        )
-        """
+    )
+    """
     )
 
     conn.commit()
@@ -385,6 +449,17 @@ async def predict(
         severity = get_severity(
             probability_decimal
         )
+        
+        explanation = generate_explanation(
+            probability,
+            severity,
+            status
+        )
+        # ==================================
+        # Anomaly Detection
+        # ==================================
+
+     
 
 
         # ==================================
@@ -684,26 +759,16 @@ def sensor_history():
 
 @app.post("/sensor/predict")
 def sensor_predict(
-    data: dict
+    data: SensorInput
 ):
 
     # ==================================
     # Read Sensor Values
     # ==================================
 
-    flow_rate = float(
-        data["flow_rate"]
-    )
-
-    pressure = float(
-        data["pressure"]
-    )
-
-    temperature = float(
-        data["temperature"]
-    )
-
-
+    flow_rate = data.flow_rate
+    pressure = data.pressure
+    temperature = data.temperature
     # ==================================
     # Create Sensor Signal
     # ==================================
@@ -778,6 +843,34 @@ def sensor_predict(
     severity = get_severity(
         probability_decimal
     )
+    explanation = generate_explanation(
+    probability,
+    severity,
+    status
+    )
+    # ==================================
+    # Anomaly Detection
+    # ==================================
+
+    try:
+
+        anomaly_result = detect_anomaly(
+            signal
+        )
+
+    except Exception as error:
+
+        anomaly_result = {
+
+            "status": "Unavailable",
+
+            "score": 0,
+
+            "count": 0,
+
+            "message": str(error)
+
+        }
   
     # ==================================
     # Save Live Prediction History
@@ -836,6 +929,12 @@ def sensor_predict(
 
         "severity":
         severity,
+        
+        "explanation": 
+         explanation,
+         
+        "anomaly":
+         anomaly_result,
 
         "threshold":
         float(
