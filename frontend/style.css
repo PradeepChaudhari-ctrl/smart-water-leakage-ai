@@ -1199,3 +1199,52 @@ canvas{
     height:300px !important;
 
 }
+.alert-item{
+
+    padding:18px;
+
+    margin-top:15px;
+
+    border-radius:12px;
+
+    background:#f8fafc;
+
+    border-left:5px solid #ef4444;
+
+}
+
+
+.alert-item h4{
+
+    margin:0 0 8px;
+
+}
+
+
+.alert-item p{
+
+    margin:5px 0;
+
+}
+
+
+.alert-item span{
+
+    display:inline-block;
+
+    margin-right:15px;
+
+    font-size:14px;
+
+}
+
+
+.alert-item small{
+
+    display:block;
+
+    margin-top:10px;
+
+    color:#64748b;
+
+}

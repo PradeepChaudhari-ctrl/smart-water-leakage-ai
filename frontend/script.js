@@ -1844,6 +1844,10 @@ setInterval(
     checkAlert,
     5000
 );
+setInterval(
+    loadAlerts,
+    10000
+);
 // ======================================================
 // PAGE LOAD
 // ======================================================
@@ -1866,6 +1870,94 @@ async function(){
     await loadLiveSensorGraph();
 
     await checkAlert();
+    await loadAlerts();
 
 
 });
+// ======================================
+// ALERT HISTORY
+// ======================================
+
+async function loadAlerts(){
+
+    try{
+
+        const response = await fetch(
+            API + "/alerts",
+            {
+                cache: "no-store"
+            }
+        );
+
+        if(!response.ok){
+
+            throw new Error(
+                "Alert API Error"
+            );
+
+        }
+
+        const data = await response.json();
+
+        console.log(
+            "Alert History:",
+            data
+        );
+
+        const box =
+            document.getElementById(
+                "alertHistory"
+            );
+
+        if(!box){
+            return;
+        }
+
+        box.innerHTML = "";
+
+        if(!Array.isArray(data)){
+            return;
+        }
+
+        data.forEach(alert => {
+
+            box.innerHTML += `
+                <div class="alert-item">
+
+                    <h4>
+🚨 ${alert.alert_type}
+</h4>
+
+<p>
+${alert.message}
+</p>
+
+<span>
+Severity: ${alert.severity}
+</span>
+
+<span>
+Probability: ${alert.probability}%
+</span>
+
+<small>
+${alert.timestamp}
+</small>
+
+                </div>
+            `;
+
+        });
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Alert History Error:",
+            error
+        );
+
+    }
+
+}

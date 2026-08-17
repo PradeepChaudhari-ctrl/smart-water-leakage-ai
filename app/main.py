@@ -6,6 +6,11 @@ import pickle
 
 import numpy as np
 import pandas as pd
+from database.alerts import (
+    create_alert_table,
+    save_alert,
+    get_alerts
+)
 # ==========================================
 # AI Explanation Generator
 # ==========================================
@@ -211,40 +216,38 @@ def create_database():
         exist_ok=True
     )
 
-    conn = sqlite3.connect(
-        DB_PATH
-    )
+    conn = sqlite3.connect(DB_PATH)
 
     cursor = conn.cursor()
 
-    cursor.execute(
-    """
-    CREATE TABLE IF NOT EXISTS sensor_data (
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            filename TEXT,
+            status TEXT,
+            probability REAL,
+            severity TEXT,
+            timestamp TEXT
+        )
+    """)
 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        flow_rate REAL,
-
-        pressure REAL,
-
-        temperature REAL,
-
-        status TEXT,
-
-        timestamp TEXT
-
-    )
-    """
-    )
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sensor_data (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            flow_rate REAL,
+            pressure REAL,
+            temperature REAL,
+            status TEXT,
+            timestamp TEXT
+        )
+    """)
 
     conn.commit()
-
     conn.close()
 
 
 create_database()
-
-
+create_alert_table()
 # ==========================================
 # Severity
 # ==========================================
@@ -879,6 +882,8 @@ def sensor_predict(
 
     if probability_decimal >= 0.60:
 
+
+
         conn = sqlite3.connect(
             DB_PATH
         )
@@ -914,6 +919,14 @@ def sensor_predict(
         conn.commit()
 
         conn.close()
+    if probability_decimal >= LEAKAGE_THRESHOLD:
+
+      save_alert(
+        "Leakage Detection",
+        "Water leakage detected. Pipeline inspection required",
+        severity,
+        probability
+    )   
 
     # ==================================
     # Response
@@ -962,9 +975,12 @@ def sensor_predict(
 # Alert Status
 # ==========================================
 
-@app.get("/alert/status")
-def alert_status():
+@app.get("/alerts")
+def alerts():
 
+    rows = get_alerts()
+
+    return rows
     # ==================================
     # Generate Live Sensor
     # ==================================
@@ -1303,3 +1319,12 @@ def stats():
         recent_predictions
 
     }
+@app.get("/alert/status")
+def alert_status():
+
+    return {
+        "alert": False,
+        "message": "System Normal",
+        "probability": 0,
+        "threshold": 30
+    }    
