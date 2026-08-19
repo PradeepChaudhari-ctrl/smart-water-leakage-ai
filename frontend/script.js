@@ -361,27 +361,6 @@ async function predictLive(data){
     updateRiskMeter(
         probability
     );
-
-
-
-
-
-
-    // ALERT
-
-    updateAlert(
-
-        result.status,
-
-        probability
-
-    );
-
-
-
-
-
-
     // ANOMALY
 
 updateAnomaly(result);
@@ -622,10 +601,13 @@ function updateAnomaly(data){
 // AI EXPLANATION
 // ======================================================
 
+// ======================================================
+// AI EXPLANATION
+// ======================================================
+
 function updateExplanation(data){
 
-    const box =
-    document.getElementById(
+    const box = document.getElementById(
         "explanation"
     );
 
@@ -638,7 +620,7 @@ function updateExplanation(data){
     box.innerHTML = "";
 
 
-    if(data.explanation){
+    if(data && data.explanation){
 
         data.explanation.forEach(item=>{
 
@@ -1878,6 +1860,10 @@ async function(){
 // ALERT HISTORY
 // ======================================
 
+// ======================================
+// ALERT HISTORY
+// ======================================
+
 async function loadAlerts(){
 
     try{
@@ -1885,9 +1871,10 @@ async function loadAlerts(){
         const response = await fetch(
             API + "/alerts",
             {
-                cache: "no-store"
+                cache:"no-store"
             }
         );
+
 
         if(!response.ok){
 
@@ -1897,67 +1884,143 @@ async function loadAlerts(){
 
         }
 
+
         const data = await response.json();
+
 
         console.log(
             "Alert History:",
             data
         );
 
+
         const box =
-            document.getElementById(
-                "alertHistory"
-            );
+        document.getElementById(
+            "alertHistory"
+        );
+
 
         if(!box){
             return;
         }
 
+
         box.innerHTML = "";
 
-        if(!Array.isArray(data)){
+
+        if(
+            !Array.isArray(data) ||
+            data.length === 0
+        ){
+
+            box.innerHTML = `
+                <p>
+                No alerts available
+                </p>
+            `;
+
             return;
+
         }
 
-        data.forEach(alert => {
+
+
+        // show latest 10 alerts only
+
+        data.slice(0,10).forEach(alert=>{
+
 
             box.innerHTML += `
-                <div class="alert-item">
 
-                    <h4>
-🚨 ${alert.alert_type}
-</h4>
 
-<p>
-${alert.message}
-</p>
+            <div class="alert-item">
 
-<span>
-Severity: ${alert.severity}
-</span>
 
-<span>
-Probability: ${alert.probability}%
-</span>
+                <h4>
+                🚨 ${alert.alert_type}
+                </h4>
 
-<small>
-${alert.timestamp}
-</small>
+
+
+                <p>
+                ${alert.message}
+                </p>
+
+
+
+                <div class="alert-meta">
+
+
+                    <span>
+                    Severity:
+                    <b>
+                    ${alert.severity}
+                    </b>
+                    </span>
+
+
+
+                    <span>
+                    Probability:
+                    <b>
+                    ${Number(alert.probability).toFixed(1)}%
+                    </b>
+                    </span>
+
+
 
                 </div>
+
+
+
+                <small>
+                ${alert.timestamp}
+                </small>
+
+
+            </div>
+
+
             `;
+
 
         });
 
+
     }
 
+
     catch(error){
+
 
         console.error(
             "Alert History Error:",
             error
         );
 
+
     }
 
+
 }
+const menuLinks =
+document.querySelectorAll(".sidebar a");
+
+
+menuLinks.forEach(link=>{
+
+    link.addEventListener(
+        "click",
+        function(){
+
+            menuLinks.forEach(
+                item=>item.classList.remove("active")
+            );
+
+
+            this.classList.add("active");
+
+        }
+    );
+
+});

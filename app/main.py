@@ -6,6 +6,7 @@ import pickle
 
 import numpy as np
 import pandas as pd
+from ai.alert_engine import evaluate_alert
 from database.alerts import (
     create_alert_table,
     save_alert,
@@ -203,7 +204,18 @@ with open(
 ) as file:
 
     model = pickle.load(file)
+# ==========================================
+# Latest Live Alert State
+# ==========================================
 
+latest_alert_status = {
+    "alert": False,
+    "message": "System Normal",
+    "probability": 0.0,
+    "severity": "LOW",
+    "timestamp": None,
+    "threshold": LEAKAGE_THRESHOLD * 100
+}
 
 # ==========================================
 # Database Initialization
@@ -832,6 +844,7 @@ def sensor_predict(
         probability_decimal * 100,
         2
     )
+    
 
 
     # ==================================
@@ -846,10 +859,73 @@ def sensor_predict(
     severity = get_severity(
         probability_decimal
     )
+    # ==========================================
+    # False Alarm Reduction
+    # ==========================================
+
+    global latest_alert_status
+    global consecutive_leakage_count
+
+    if probability_decimal >= LEAKAGE_THRESHOLD:
+
+        consecutive_leakage_count += 1
+
+    else:
+
+        consecutive_leakage_count = 0
+
+
+    confirmed_alert = (
+        consecutive_leakage_count
+        >= LEAK_CONFIRMATION_COUNT
+    )
+
+
+    if confirmed_alert:
+
+        alert_message = "🚨 Water Leakage Confirmed"
+
+    else:
+
+        alert_message = "✅ System Normal"
+
+
+    # ==========================================
+    # Update Current Alert State
+    # ==========================================
+
+    latest_alert_status = {
+
+        "alert": bool(confirmed_alert),
+
+        "message": alert_message,
+
+        "probability": float(probability),
+
+        "severity": str(severity),
+
+        "timestamp":
+            datetime.now().strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+
+        "threshold":
+            float(
+                LEAKAGE_THRESHOLD * 100
+            ),
+
+        "confirmation_count":
+            consecutive_leakage_count,
+
+        "required_confirmations":
+            LEAK_CONFIRMATION_COUNT
+    }
+
+
     explanation = generate_explanation(
-    probability,
-    severity,
-    status
+        probability,
+        severity,
+        status
     )
     # ==================================
     # Anomaly Detection
@@ -919,209 +995,80 @@ def sensor_predict(
         conn.commit()
 
         conn.close()
-    if probability_decimal >= LEAKAGE_THRESHOLD:
+    # ==========================================
+    # Smart Alert Engine
+    # ==========================================
 
-      save_alert(
-        "Leakage Detection",
-        "Water leakage detected. Pipeline inspection required",
-        severity,
-        probability
-    )   
+    alert_result = evaluate_alert(
+        probability=probability,
+        pressure=pressure,
+        flow_rate=flow_rate
+    )
 
+
+    # ==========================================
+    # Save Alert Only When Both Confirm
+    # ==========================================
+
+    if (
+        alert_result["alert"]
+        and confirmed_alert
+    ):
+
+        save_alert(
+            "Leakage Detection",
+            alert_result["message"],
+            alert_result["severity"],
+            probability
+        )   
     # ==================================
     # Response
     # ==================================
 
     return {
 
-        "status":
-        status,
+        "status": status,
 
         "leakage_probability":
-        float(probability),
+            float(probability),
 
         "severity":
-        severity,
-        
-        "explanation": 
-         explanation,
-         
+            severity,
+
+        "explanation":
+            explanation,
+
         "anomaly":
-         anomaly_result,
+            anomaly_result,
 
         "threshold":
-        float(
-            LEAKAGE_THRESHOLD * 100
-        ),
+            float(
+                LEAKAGE_THRESHOLD * 100
+            ),
 
-        "sensor_data":
-        {
+        "sensor_data": {
 
             "flow_rate":
-            flow_rate,
+                flow_rate,
 
             "pressure":
-            pressure,
+                pressure,
 
             "temperature":
-            temperature
-
+                temperature
         }
 
     }
 
 
 # ==========================================
-# Alert Status
+# Alert History
 # ==========================================
 
 @app.get("/alerts")
 def alerts():
 
-    rows = get_alerts()
-
-    return rows
-    # ==================================
-    # Generate Live Sensor
-    # ==================================
-
-    data = generate_sensor_data()
-
-
-    # ==================================
-    # Convert to Python float
-    # ==================================
-
-    flow_rate = float(
-        data["flow_rate"]
-    )
-
-    pressure = float(
-        data["pressure"]
-    )
-
-    temperature = float(
-        data["temperature"]
-    )
-
-
-    # ==================================
-    # Create Signal
-    # ==================================
-
-    signal = np.array(
-
-        [
-
-            flow_rate,
-
-            pressure,
-
-            temperature
-
-        ],
-
-        dtype=float
-
-    )
-
-
-    signal = np.resize(
-        signal,
-        500
-    )
-
-
-    # ==================================
-    # Feature Extraction
-    # ==================================
-
-    features = extract_advanced_features(
-        signal
-    )
-
-
-    feature_df = pd.DataFrame(
-        [features]
-    )
-
-
-    # ==================================
-    # Prediction
-    # ==================================
-
-    raw_probability = model.predict_proba(
-        feature_df
-    )[0][1]
-
-
-    # IMPORTANT:
-    # Convert numpy.float -> Python float
-
-    probability_decimal = float(
-        raw_probability
-    )
-
-
-    probability = round(
-        probability_decimal * 100,
-        2
-    )
-
-
-    # ==================================
-    # Optimized Threshold
-    # ==================================
-
-    # IMPORTANT:
-    # Convert numpy.bool -> Python bool
-
-    alert = bool(
-
-        probability_decimal
-        >= LEAKAGE_THRESHOLD
-
-    )
-
-
-    # ==================================
-    # Alert Message
-    # ==================================
-
-    if alert:
-
-        message = (
-            "🚨 Water Leakage Detected"
-        )
-
-    else:
-
-        message = (
-            "✅ System Normal"
-        )
-
-
-    # ==================================
-    # Response
-    # ==================================
-
-    return {
-
-        "alert":
-        alert,
-
-        "message":
-        message,
-
-        "probability":
-        float(probability),
-
-        "threshold":
-        float(
-            LEAKAGE_THRESHOLD * 100
-        )
-
-    }
+    return get_alerts()
 
 # ==========================================
 # Dashboard Statistics
@@ -1319,12 +1266,19 @@ def stats():
         recent_predictions
 
     }
+
+# ==========================================
+# Current Live Alert Status
+# ==========================================
+
 @app.get("/alert/status")
 def alert_status():
 
-    return {
-        "alert": False,
-        "message": "System Normal",
-        "probability": 0,
-        "threshold": 30
-    }    
+    return latest_alert_status
+# ==========================================
+# False Alarm Reduction
+# ==========================================
+
+LEAK_CONFIRMATION_COUNT = 3
+
+consecutive_leakage_count = 0
