@@ -1876,22 +1876,7 @@ async function loadAlerts(){
         );
 
 
-        if(!response.ok){
-
-            throw new Error(
-                "Alert API Error"
-            );
-
-        }
-
-
         const data = await response.json();
-
-
-        console.log(
-            "Alert History:",
-            data
-        );
 
 
         const box =
@@ -1908,32 +1893,83 @@ async function loadAlerts(){
         box.innerHTML = "";
 
 
-        if(
-            !Array.isArray(data) ||
-            data.length === 0
-        ){
+        if(!Array.isArray(data) || data.length===0){
 
-            box.innerHTML = `
-                <p>
-                No alerts available
-                </p>
+            box.innerHTML =
+            `
+            <p>No alerts available</p>
             `;
 
             return;
-
         }
 
 
 
-        // show latest 10 alerts only
-
-        data.slice(0,10).forEach(alert=>{
-
-
-            box.innerHTML += `
+        // remove duplicate alerts
+        const uniqueAlerts = [];
 
 
-            <div class="alert-item">
+        const seen = new Set();
+
+
+
+        data.forEach(alert=>{
+
+
+            const key =
+            alert.alert_type +
+            alert.severity +
+            alert.timestamp;
+
+
+
+            if(!seen.has(key)){
+
+                seen.add(key);
+
+                uniqueAlerts.push(alert);
+
+            }
+
+
+        });
+
+
+
+
+        // show latest 10 alerts
+
+        uniqueAlerts
+        .slice(0,10)
+        .forEach(alert=>{
+
+
+            let severityClass="";
+
+
+            if(alert.severity==="HIGH"){
+
+                severityClass="high";
+
+            }
+            else if(alert.severity==="MEDIUM"){
+
+                severityClass="medium";
+
+            }
+            else{
+
+                severityClass="low";
+
+            }
+
+
+
+            box.innerHTML +=
+
+
+            `
+            <div class="alert-item ${severityClass}">
 
 
                 <h4>
@@ -1941,36 +1977,30 @@ async function loadAlerts(){
                 </h4>
 
 
-
                 <p>
                 ${alert.message}
                 </p>
 
 
-
                 <div class="alert-meta">
 
-
-                    <span>
-                    Severity:
-                    <b>
-                    ${alert.severity}
-                    </b>
-                    </span>
-
+                <span>
+                Severity:
+                <b>
+                ${alert.severity}
+                </b>
+                </span>
 
 
-                    <span>
-                    Probability:
-                    <b>
-                    ${Number(alert.probability).toFixed(1)}%
-                    </b>
-                    </span>
-
+                <span>
+                Risk:
+                <b>
+                ${Number(alert.probability).toFixed(1)}%
+                </b>
+                </span>
 
 
                 </div>
-
 
 
                 <small>
@@ -1980,11 +2010,11 @@ async function loadAlerts(){
 
             </div>
 
-
             `;
 
 
         });
+
 
 
     }
@@ -1992,15 +2022,12 @@ async function loadAlerts(){
 
     catch(error){
 
-
         console.error(
-            "Alert History Error:",
+            "Alert Error:",
             error
         );
 
-
     }
-
 
 }
 const menuLinks =
