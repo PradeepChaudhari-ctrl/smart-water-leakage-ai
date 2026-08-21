@@ -525,6 +525,49 @@ footer {
     border-left-color: var(--success);
     background: #f7fff9;
 }
+/* =====================================
+   EARLY WARNING ALERT
+===================================== */
+
+.alert-card.alert-warning{
+
+    border-left-color: var(--warning);
+
+    background: #fffaf0;
+
+}
+
+.alert-card.alert-warning .alert-icon{
+
+    color: var(--warning);
+
+}
+
+
+/* =====================================
+   CONFIRMED LEAKAGE ALERT
+===================================== */
+
+.alert-card.alert-danger{
+
+    border-left-color: var(--danger);
+
+    background: #fff7f7;
+
+}
+
+
+/* =====================================
+   NORMAL ALERT
+===================================== */
+
+.alert-card.alert-normal{
+
+    border-left-color: var(--success);
+
+    background: #f7fff9;
+
+}
 
 .alert-icon {
     font-size: 30px;

@@ -141,6 +141,20 @@ setText(
             `${Number(data.temperature).toFixed(2)} °C`
 
         );
+        // USAGE DURATION
+
+setText(
+    "usageDuration",
+    `${Number(data.usage_duration).toFixed(2)} min`
+);
+
+
+// VIBRATION
+
+setText(
+    "vibration",
+    `${Number(data.vibration).toFixed(2)}`
+);
 
 
 
@@ -151,7 +165,22 @@ setText(
         const result =
         await predictLive(data);
 
+        setText(
+    "liveStatus",
+    result.status
+);
 
+
+setText(
+    "liveProbability",
+    result.leakage_probability + "%"
+);
+
+
+setText(
+    "liveSeverity",
+    result.severity
+);
 
 
 
@@ -563,37 +592,35 @@ function updateAlert(status, probability=0){
 
 function updateAnomaly(data){
 
-    if(!data || !data.anomaly){
+    if(!data){
         return;
     }
 
-
-    const anomaly = data.anomaly;
-
+    const anomaly = data.anomaly || {};
 
     setText(
         "anomalyStatus",
-        anomaly.status || "-"
+        anomaly.status || "Normal"
     );
-
 
     setText(
         "anomalyScore",
-        anomaly.anomaly_score + "%" || "-"
+        (anomaly.anomaly_score ?? 0) + "%"
     );
-
 
     setText(
         "anomalyCount",
-        anomaly.anomaly_count || "-"
+        anomaly.anomaly_count ?? 0
     );
 
 
     setText(
         "anomalyMessage",
         anomaly.status === "Normal"
-        ? "No abnormal pattern detected"
-        : "Abnormal sensor pattern detected"
+        ?
+        "No abnormal pattern detected"
+        :
+        "Abnormal sensor pattern detected"
     );
 
 }
@@ -907,29 +934,38 @@ function drawChart(signal){
 
                 datasets:[
 
-                    {
+{
 
-                        label:
-                        "Pressure Signal",
+    label:"Pressure Signal",
 
+    data: signal.map(
+        value => {
 
-                        data:
-                        signal,
+            let min = Math.min(...signal);
+            let max = Math.max(...signal);
 
+            if(max === min){
+                return 0;
+            }
 
-                        borderWidth:2,
+            return (
+                ((value - min) /
+                (max - min)) * 100
+            ).toFixed(2);
 
+        }
+    ),
 
-                        pointRadius:0,
+    borderWidth:2,
 
+    pointRadius:0,
 
-                        tension:0.3
+    tension:0.3
 
-                    }
+}
 
-                ]
-
-            },
+]
+                    },
 
 
 
@@ -1445,10 +1481,33 @@ function createSeverityChart(data){
 
 }
 // ======================================================
-// LIVE SENSOR GRAPH
+// NORMALIZE FUNCTION
 // ======================================================
 
+function normalize(arr){
 
+    let min = Math.min(...arr);
+    let max = Math.max(...arr);
+
+
+    if(max === min){
+
+        return arr.map(()=>0);
+
+    }
+
+
+    return arr.map(value=>{
+
+        return Number(
+            (
+                ((value-min)/(max-min))*100
+            ).toFixed(2)
+        );
+
+    });
+
+}
 // ======================================================
 // LIVE SENSOR GRAPH
 // ======================================================
@@ -1495,30 +1554,39 @@ async function loadLiveSensorGraph(){
 
 
 
-        const labels = data.map(
-            item => 
-            item.timestamp.slice(11,19)
-        );
+// latest 30 readings only
+const latestData = data.slice(0,30).reverse();
 
 
-        const pressure = data.map(
-            item =>
-            Number(item.pressure)
-        );
+const labels = latestData.map(
+    item =>
+    item.timestamp
+    ?
+    item.timestamp.slice(11,19)
+    :
+    "-"
+);
 
 
-        const flow = data.map(
-            item =>
-            Number(item.flow_rate)
-        );
+const pressure = normalize(
+    latestData.map(
+        item => Number(item.pressure)
+    )
+);
 
 
-        const temperature = data.map(
-            item =>
-            Number(item.temperature)
-        );
+const flow = normalize(
+    latestData.map(
+        item => Number(item.flow_rate)
+    )
+);
 
 
+const temperature = normalize(
+    latestData.map(
+        item => Number(item.temperature)
+    )
+);
 
         if(liveSensorChart){
 
@@ -1544,8 +1612,7 @@ async function loadLiveSensorGraph(){
 
 
                     {
-                        label:"Pressure",
-
+                        label:"Pressure (%)",
                         data:pressure,
 
                         borderWidth:2
@@ -1554,7 +1621,7 @@ async function loadLiveSensorGraph(){
 
 
                     {
-                        label:"Flow",
+                        label:"Flow (%)",
 
                         data:flow,
 
@@ -1564,7 +1631,7 @@ async function loadLiveSensorGraph(){
 
 
                     {
-                        label:"Temperature",
+                        label:"Temperature (%)",
 
                         data:temperature,
 
@@ -1597,17 +1664,14 @@ async function loadLiveSensorGraph(){
 
 
     }
-
-
     catch(error){
 
-        console.error(
-            "GRAPH ERROR",
-            error
-        );
+    console.error(
+        "GRAPH ERROR",
+        error
+    );
 
-    }
-
+}
 
 }
 
@@ -1690,121 +1754,118 @@ async function loadLiveSensorGraph(){
 // ALERT CHECK
 // ======================================================
 
-async function checkAlert(){
+// ======================================================
+// ALERT CHECK
+// ======================================================
 
+async function checkAlert(){
 
     try{
 
-
-        const response =
-        await fetch(
-
+        const response = await fetch(
             API + "/alert/status",
-
             {
-                cache:"no-store"
+                cache: "no-store"
             }
-
         );
 
+        if(!response.ok){
+            throw new Error("Alert API Error");
+        }
 
+        const data = await response.json();
 
-        const data =
-        await response.json();
+        console.log("Alert:", data);
 
+        const box = document.getElementById("alertBox");
+        const msg = document.getElementById("alertMessage");
+        const action = document.getElementById("action");
 
-
-        console.log(
-            "Alert:",
-            data
-        );
-
-
-
-        const box =
-        document.getElementById(
-            "alertBox"
-        );
-
-
-        const msg =
-        document.getElementById(
-            "alertMessage"
-        );
-
-
-        const action =
-        document.getElementById(
-            "action"
-        );
-
-
-
-        if(!box || !msg)
+        if(!box || !msg){
             return;
+        }
 
+        // ==========================================
+        // CONFIRMED LEAKAGE
+        // ==========================================
 
-
-        if(data.alert){
-
+        if(data.alert === true){
 
             msg.textContent =
-            "⚠️ Water Leakage Alert";
-
+                "🚨 Water Leakage Confirmed";
 
             if(action){
 
                 action.textContent =
-                "Inspect pipeline immediately";
+                    `Inspect pipeline immediately — Risk ${Number(
+                        data.probability || 0
+                    ).toFixed(1)}%`;
 
             }
 
-
             box.className =
-            "alert-card card alert-danger";
-
+                "card alert-card alert-danger";
 
         }
+
+        // ==========================================
+        // EARLY WARNING
+        // ==========================================
+
+        else if(data.early_warning === true){
+
+            msg.textContent =
+                "⚠️ Early Leakage Warning";
+
+            if(action){
+
+                action.textContent =
+                    `Monitor pipeline closely — Risk ${Number(
+                        data.probability || 0
+                    ).toFixed(1)}%`;
+
+            }
+
+            box.className =
+                "card alert-card alert-warning";
+
+        }
+
+        // ==========================================
+        // NORMAL
+        // ==========================================
 
         else{
 
-
             msg.textContent =
-            "✅ System Normal";
-
+                "✅ System Normal";
 
             if(action){
 
                 action.textContent =
-                "No action required";
+                    `No action required — Risk ${Number(
+                        data.probability || 0
+                    ).toFixed(1)}%`;
 
             }
 
-
             box.className =
-            "alert-card card alert-normal";
-
+                "card alert-card alert-normal";
 
         }
 
-
     }
-
 
     catch(error){
 
-
         console.error(
-            "Alert Error",
+            "Alert Error:",
             error
         );
 
-
     }
 
-
 }
-
 // ======================================================
 // AUTO UPDATE
 // ======================================================
@@ -1940,8 +2001,8 @@ async function loadAlerts(){
         // show latest 10 alerts
 
         uniqueAlerts
-        .slice(0,10)
-        .forEach(alert=>{
+.slice(0,5)
+.forEach(alert=>{
 
 
             let severityClass="";

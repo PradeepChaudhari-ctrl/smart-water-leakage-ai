@@ -78,11 +78,10 @@ from pydantic import BaseModel
 class SensorInput(BaseModel):
 
     flow_rate: float
-
     pressure: float
-
     temperature: float
-
+    usage_duration: float
+    vibration: float
 # ==========================================
 # Add src path
 # ==========================================
@@ -151,8 +150,12 @@ app.add_middleware(
 # ==========================================
 # Paths
 # ==========================================
-
 MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "models",
+    "sensor_fusion_rf.pkl"
+)
+SIGNAL_MODEL_PATH = os.path.join(
     BASE_DIR,
     "models",
     "leakage_detector_rf.pkl"
@@ -185,6 +188,23 @@ TEMP_FILE = os.path.join(
 # Therefore we use 0.30.
 
 LEAKAGE_THRESHOLD = 0.30
+# ==========================================
+# Early Leakage Detection
+# ==========================================
+
+EARLY_WARNING_THRESHOLD = 0.20
+EARLY_WARNING_CONFIRMATION_COUNT = 2
+
+consecutive_early_warning_count = 0
+early_warning_already_saved = False
+confirmed_alert_already_saved = False
+# ==========================================
+# False Alarm Reduction
+# ==========================================
+
+LEAK_CONFIRMATION_COUNT = 3
+
+consecutive_leakage_count = 0
 
 
 # ==========================================
@@ -204,6 +224,12 @@ with open(
 ) as file:
 
     model = pickle.load(file)
+with open(
+    SIGNAL_MODEL_PATH,
+    "rb"
+) as file:
+
+    signal_model = pickle.load(file)    
 # ==========================================
 # Latest Live Alert State
 # ==========================================
@@ -244,15 +270,17 @@ def create_database():
     """)
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS sensor_data (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            flow_rate REAL,
-            pressure REAL,
-            temperature REAL,
-            status TEXT,
-            timestamp TEXT
-        )
-    """)
+    CREATE TABLE IF NOT EXISTS sensor_data (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        flow_rate REAL,
+        pressure REAL,
+        temperature REAL,
+        usage_duration REAL,
+        vibration REAL,
+        status TEXT,
+        timestamp TEXT
+    )
+""")
 
     conn.commit()
     conn.close()
@@ -435,9 +463,9 @@ async def predict(
         # ML Prediction
         # ==================================
 
-        raw_probability = model.predict_proba(
-            feature_df
-        )[0][1]
+        raw_probability = signal_model.predict_proba(
+    feature_df
+)[0][1]
 
 
         # Force Python float
@@ -549,11 +577,13 @@ async def predict(
             ],
 
             "anomaly":
-            anomaly_result,
+anomaly_result,
 
-            "saved":
-            True
+"explanation":
+explanation,
 
+"saved":
+True
         }
 
 
@@ -661,28 +691,31 @@ def live_sensor():
 
 
     cursor.execute(
-        """
-        INSERT INTO sensor_data
-        (
-            flow_rate,
-            pressure,
-            temperature,
-            status,
-            timestamp
-        )
-
-        VALUES (?, ?, ?, ?, ?)
-        """,
-
-        (
-            data["flow_rate"],
-            data["pressure"],
-            data["temperature"],
-            data["status"],
-            data["timestamp"]
-        )
+    """
+    INSERT INTO sensor_data
+    (
+        flow_rate,
+        pressure,
+        temperature,
+        usage_duration,
+        vibration,
+        status,
+        timestamp
     )
 
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """,
+
+    (
+        data["flow_rate"],
+        data["pressure"],
+        data["temperature"],
+        data["usage_duration"],
+        data["vibration"],
+        data["status"],
+        data["timestamp"]
+    )
+)
 
     conn.commit()
 
@@ -690,22 +723,20 @@ def live_sensor():
 
     return {
 
-        "timestamp":
-        str(data["timestamp"]),
+    "timestamp": str(data["timestamp"]),
 
-        "flow_rate":
-        float(data["flow_rate"]),
+    "flow_rate": float(data["flow_rate"]),
 
-        "pressure":
-        float(data["pressure"]),
+    "pressure": float(data["pressure"]),
 
-        "temperature":
-        float(data["temperature"]),
+    "temperature": float(data["temperature"]),
 
-        "status":
-        str(data["status"])
+    "usage_duration": float(data["usage_duration"]),
 
-    }
+    "vibration": float(data["vibration"]),
+
+    "status": str(data["status"])
+}
 # ==========================================
 # Sensor History
 # ==========================================
@@ -723,17 +754,17 @@ def sensor_history():
     cursor.execute(
         """
         SELECT
-            flow_rate,
-            pressure,
-            temperature,
-            status,
-            timestamp
-
-        FROM sensor_data
-
+    flow_rate,
+    pressure,
+    temperature,
+    usage_duration,
+    vibration,
+    status,
+    timestamp
+FROM sensor_data
         ORDER BY id DESC
 
-        LIMIT 100
+        LIMIT 30
         """
     )
 
@@ -748,123 +779,103 @@ def sensor_history():
 
     for row in rows:
 
-        result.append(
+       result.append(
 
-            {
-                "flow_rate": float(row[0]),
+        {
+            "flow_rate": float(row[0]),
 
-                "pressure": float(row[1]),
+            "pressure": float(row[1]),
 
-                "temperature": float(row[2]),
+            "temperature": float(row[2]),
 
-                "status": row[3],
+            "usage_duration": float(row[3]) if row[3] is not None else 0.0,
 
-                "timestamp": row[4]
+"vibration": float(row[4]) if row[4] is not None else 0.0,
 
-            }
+"status": row[5],
+
+"timestamp": row[6]
+
+        }
 
         )
 
 
     return result
 
+
 # ==========================================
 # Live Sensor Prediction
 # ==========================================
 
 @app.post("/sensor/predict")
-def sensor_predict(
-    data: SensorInput
-):
-
-    # ==================================
-    # Read Sensor Values
-    # ==================================
+def sensor_predict(data: SensorInput):
 
     flow_rate = data.flow_rate
     pressure = data.pressure
     temperature = data.temperature
-    # ==================================
-    # Create Sensor Signal
-    # ==================================
+    usage_duration = data.usage_duration
+    vibration = data.vibration
 
-    signal = np.array(
-
-        [
-
-            flow_rate,
-
-            pressure,
-
-            temperature
-
-        ],
-
-        dtype=float
-
-    )
-
-
-    # Model expects a signal-like input
-    signal = np.resize(
-        signal,
-        500
-    )
-
-
-    # ==================================
-    # Feature Extraction
-    # ==================================
-
-    features = extract_advanced_features(
-        signal
-    )
-
+    # ==========================================
+    # SENSOR FUSION FEATURES
+    # ==========================================
 
     feature_df = pd.DataFrame(
-        [features]
+        [[
+            flow_rate,
+            pressure,
+            temperature,
+            usage_duration,
+            vibration
+        ]],
+        columns=[
+            "flow_rate",
+            "pressure",
+            "temperature",
+            "usage_duration",
+            "vibration"
+        ]
     )
 
-
-    # ==================================
-    # Prediction
-    # ==================================
+    # ==========================================
+    # AI PREDICTION
+    # ==========================================
 
     raw_probability = model.predict_proba(
         feature_df
     )[0][1]
 
-
     probability_decimal = float(
         raw_probability
     )
-
 
     probability = round(
         probability_decimal * 100,
         2
     )
-    
 
-
-    # ==================================
-    # Leakage Decision
-    # ==================================
+    # ==========================================
+    # LEAKAGE DECISION
+    # ==========================================
 
     status = get_leakage_status(
         probability_decimal
     )
 
-
     severity = get_severity(
         probability_decimal
     )
+
     # ==========================================
-    # False Alarm Reduction
+    # FALSE ALARM REDUCTION
     # ==========================================
 
     global latest_alert_status
     global consecutive_leakage_count
+    global consecutive_early_warning_count
+    global early_warning_already_saved
+    global confirmed_alert_already_saved
 
     if probability_decimal >= LEAKAGE_THRESHOLD:
 
@@ -874,35 +885,126 @@ def sensor_predict(
 
         consecutive_leakage_count = 0
 
+    # ==========================================
+    # EARLY WARNING
+    # ==========================================
+
+    if (
+        probability_decimal >= EARLY_WARNING_THRESHOLD
+        and probability_decimal < LEAKAGE_THRESHOLD
+    ):
+
+        consecutive_early_warning_count += 1
+
+    else:
+
+        consecutive_early_warning_count = 0
+
+    # ==========================================
+    # CONFIRMED LEAKAGE
+    # ==========================================
 
     confirmed_alert = (
         consecutive_leakage_count
         >= LEAK_CONFIRMATION_COUNT
     )
 
+    # ==========================================
+    # CONFIRMED EARLY WARNING
+    # ==========================================
+
+    early_warning = (
+        consecutive_early_warning_count
+        >= EARLY_WARNING_CONFIRMATION_COUNT
+    )
+
+    # ==========================================
+    # ALERT MESSAGE
+    # ==========================================
 
     if confirmed_alert:
 
-        alert_message = "🚨 Water Leakage Confirmed"
+        alert_message = (
+            "🚨 Water Leakage Confirmed"
+        )
+
+    elif early_warning:
+
+        alert_message = (
+            "⚠️ Early Leakage Warning"
+        )
 
     else:
 
-        alert_message = "✅ System Normal"
-
+        alert_message = (
+            "✅ System Normal"
+        )
 
     # ==========================================
-    # Update Current Alert State
+    # AI EXPLANATION
+    # ==========================================
+
+    explanation = generate_explanation(
+        probability,
+        severity,
+        status
+    )
+
+    # ==========================================
+    # ANOMALY DETECTION
+    # ==========================================
+
+    sensor_signal = np.array(
+        [
+            flow_rate,
+            pressure,
+            temperature,
+            usage_duration,
+            vibration
+        ],
+        dtype=float
+    )
+
+    try:
+
+        anomaly_result = detect_anomaly(
+            sensor_signal
+        )
+
+    except Exception as error:
+
+        anomaly_result = {
+
+            "status": "Unavailable",
+
+            "anomaly_score": 0,
+
+            "anomaly_count": 0,
+
+            "message": str(error)
+
+        }
+
+    # ==========================================
+    # UPDATE LIVE ALERT STATE
     # ==========================================
 
     latest_alert_status = {
 
-        "alert": bool(confirmed_alert),
+        "alert":
+            bool(confirmed_alert),
 
-        "message": alert_message,
+        "early_warning":
+            bool(early_warning),
 
-        "probability": float(probability),
+        "message":
+            alert_message,
 
-        "severity": str(severity),
+        "probability":
+            float(probability),
+
+        "severity":
+            str(severity),
 
         "timestamp":
             datetime.now().strftime(
@@ -918,51 +1020,22 @@ def sensor_predict(
             consecutive_leakage_count,
 
         "required_confirmations":
-            LEAK_CONFIRMATION_COUNT
+            LEAK_CONFIRMATION_COUNT,
+
+        "early_warning_count":
+            consecutive_early_warning_count,
+
+        "early_warning_required":
+            EARLY_WARNING_CONFIRMATION_COUNT
     }
 
-
-    explanation = generate_explanation(
-        probability,
-        severity,
-        status
-    )
-    # ==================================
-    # Anomaly Detection
-    # ==================================
-
-    try:
-
-        anomaly_result = detect_anomaly(
-            signal
-        )
-
-    except Exception as error:
-
-        anomaly_result = {
-
-            "status": "Unavailable",
-
-            "score": 0,
-
-            "count": 0,
-
-            "message": str(error)
-
-        }
-  
-    # ==================================
-    # Save Live Prediction History
-    # Only save high risk events
-    # ==================================
+    # ==========================================
+    # SAVE HIGH-RISK PREDICTION
+    # ==========================================
 
     if probability_decimal >= 0.60:
 
-
-
-        conn = sqlite3.connect(
-            DB_PATH
-        )
+        conn = sqlite3.connect(DB_PATH)
 
         cursor = conn.cursor()
 
@@ -976,10 +1049,8 @@ def sensor_predict(
                 severity,
                 timestamp
             )
-
             VALUES (?, ?, ?, ?, ?)
             """,
-
             (
                 "LIVE_SENSOR",
                 status,
@@ -989,14 +1060,13 @@ def sensor_predict(
                     "%Y-%m-%d %H:%M:%S"
                 )
             )
-
         )
 
         conn.commit()
-
         conn.close()
+
     # ==========================================
-    # Smart Alert Engine
+    # SMART ALERT ENGINE
     # ==========================================
 
     alert_result = evaluate_alert(
@@ -1005,9 +1075,8 @@ def sensor_predict(
         flow_rate=flow_rate
     )
 
-
     # ==========================================
-    # Save Alert Only When Both Confirm
+    # SAVE CONFIRMED LEAKAGE ALERT
     # ==========================================
 
     if (
@@ -1015,19 +1084,53 @@ def sensor_predict(
         and confirmed_alert
     ):
 
-        save_alert(
-            "Leakage Detection",
-            alert_result["message"],
-            alert_result["severity"],
-            probability
-        )   
-    # ==================================
-    # Response
-    # ==================================
+        if not confirmed_alert_already_saved:
+
+            save_alert(
+                "Leakage Detection",
+                alert_result["message"],
+                alert_result["severity"],
+                probability
+            )
+
+            confirmed_alert_already_saved = True
+
+    else:
+
+        confirmed_alert_already_saved = False
+
+    # ==========================================
+    # SAVE EARLY WARNING
+    # ==========================================
+
+    if (
+        early_warning
+        and not confirmed_alert
+    ):
+
+        if not early_warning_already_saved:
+
+            save_alert(
+                "Early Leakage Warning",
+                "Early leakage pattern detected. Monitoring required.",
+                "MEDIUM",
+                probability
+            )
+
+            early_warning_already_saved = True
+
+    else:
+
+        early_warning_already_saved = False
+
+    # ==========================================
+    # RESPONSE
+    # ==========================================
 
     return {
 
-        "status": status,
+        "status":
+            status,
 
         "leakage_probability":
             float(probability),
@@ -1045,6 +1148,173 @@ def sensor_predict(
             float(
                 LEAKAGE_THRESHOLD * 100
             ),
+
+        "early_warning": {
+
+            "active":
+                bool(early_warning),
+
+            "threshold":
+                float(
+                    EARLY_WARNING_THRESHOLD * 100
+                ),
+
+            "confirmation_count":
+                consecutive_early_warning_count,
+
+            "required_confirmations":
+                EARLY_WARNING_CONFIRMATION_COUNT
+        },
+
+        "alert": {
+
+            "confirmed":
+                bool(confirmed_alert),
+
+            "message":
+                alert_message,
+
+            "confirmation_count":
+                consecutive_leakage_count,
+
+            "required_confirmations":
+                LEAK_CONFIRMATION_COUNT
+        },
+
+        "sensor_data": {
+
+            "flow_rate":
+                float(flow_rate),
+
+            "pressure":
+                float(pressure),
+
+            "temperature":
+                float(temperature),
+
+            "usage_duration":
+                float(usage_duration),
+
+            "vibration":
+                float(vibration)
+        }
+
+    }
+    # ==========================================
+    # Smart Alert Engine
+    # ==========================================
+
+    alert_result = evaluate_alert(
+        probability=probability,
+        pressure=pressure,
+        flow_rate=flow_rate
+    )
+
+    # ==========================================
+    # Save Confirmed Leakage Alert
+    # ==========================================
+
+    if (
+        alert_result["alert"]
+        and confirmed_alert
+    ):
+
+        if not confirmed_alert_already_saved:
+
+            save_alert(
+                "Leakage Detection",
+                alert_result["message"],
+                alert_result["severity"],
+                probability
+            )
+
+            confirmed_alert_already_saved = True
+
+    else:
+
+        confirmed_alert_already_saved = False
+
+
+    # ==========================================
+    # Save Early Warning Alert
+    # ==========================================
+
+    if (
+        early_warning
+        and not confirmed_alert
+    ):
+
+        if not early_warning_already_saved:
+
+            save_alert(
+                "Early Leakage Warning",
+                "Early leakage pattern detected. Monitoring required.",
+                "MEDIUM",
+                probability
+            )
+
+            early_warning_already_saved = True
+
+    else:
+
+        early_warning_already_saved = False
+    # ==========================================
+    # Response
+    # ==========================================
+
+    return {
+
+        "status":
+            status,
+
+        "leakage_probability":
+            float(probability),
+
+        "severity":
+            severity,
+
+        "explanation":
+            explanation,
+
+        "anomaly":
+            anomaly_result,
+
+        "threshold":
+            float(
+                LEAKAGE_THRESHOLD * 100
+            ),
+
+        "early_warning": {
+
+            "active":
+                bool(early_warning),
+
+            "threshold":
+                float(
+                    EARLY_WARNING_THRESHOLD * 100
+                ),
+
+            "confirmation_count":
+                consecutive_early_warning_count,
+
+            "required_confirmations":
+                EARLY_WARNING_CONFIRMATION_COUNT
+        },
+
+        "alert": {
+
+            "confirmed":
+                bool(confirmed_alert),
+
+            "message":
+                alert_message,
+
+            "confirmation_count":
+                consecutive_leakage_count,
+
+            "required_confirmations":
+                LEAK_CONFIRMATION_COUNT
+        },
 
         "sensor_data": {
 
@@ -1275,10 +1545,3 @@ def stats():
 def alert_status():
 
     return latest_alert_status
-# ==========================================
-# False Alarm Reduction
-# ==========================================
-
-LEAK_CONFIRMATION_COUNT = 3
-
-consecutive_leakage_count = 0

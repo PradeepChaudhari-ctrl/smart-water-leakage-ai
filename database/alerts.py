@@ -165,7 +165,7 @@ def get_alerts():
         FROM alerts
 
         ORDER BY id DESC
-        LIMIT 20
+LIMIT 5
         """
     )
 
