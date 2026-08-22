@@ -24,28 +24,27 @@ def generate_explanation(
 
     explanation = []
 
+    probability = float(probability)
 
-    if probability >= 70:
+    if probability >= 60:
 
         explanation.append(
             "High leakage probability detected"
         )
 
         explanation.append(
-            "Sensor pattern shows abnormal behavior"
+            "Sensor pattern shows high-risk behavior"
         )
-
 
     elif probability >= 30:
 
         explanation.append(
-            "Moderate risk detected"
+            "Moderate leakage probability detected"
         )
 
         explanation.append(
             "Continuous monitoring recommended"
         )
-
 
     else:
 
@@ -57,18 +56,16 @@ def generate_explanation(
             "No significant leakage pattern detected"
         )
 
-
     explanation.append(
         f"Risk classification: {severity}"
     )
-
 
     explanation.append(
         f"AI decision: {status}"
     )
 
-
     return explanation
+
 
 from datetime import datetime
 
@@ -879,12 +876,14 @@ def sensor_predict(data: SensorInput):
 
     if probability_decimal >= LEAKAGE_THRESHOLD:
 
-        consecutive_leakage_count += 1
+      consecutive_leakage_count = min(
+        consecutive_leakage_count + 1,
+        LEAK_CONFIRMATION_COUNT
+    )
 
     else:
 
-        consecutive_leakage_count = 0
-
+       consecutive_leakage_count = 0
     # ==========================================
     # EARLY WARNING
     # ==========================================
@@ -1029,41 +1028,41 @@ def sensor_predict(data: SensorInput):
             EARLY_WARNING_CONFIRMATION_COUNT
     }
 
-    # ==========================================
-    # SAVE HIGH-RISK PREDICTION
-    # ==========================================
+    # # ==========================================
+    # # SAVE HIGH-RISK PREDICTION
+    # # ==========================================
 
-    if probability_decimal >= 0.60:
+    # if probability_decimal >= 0.60:
 
-        conn = sqlite3.connect(DB_PATH)
+    #     conn = sqlite3.connect(DB_PATH)
 
-        cursor = conn.cursor()
+    #     cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO history
-            (
-                filename,
-                status,
-                probability,
-                severity,
-                timestamp
-            )
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (
-                "LIVE_SENSOR",
-                status,
-                float(probability),
-                severity,
-                datetime.now().strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
-            )
-        )
+    #     cursor.execute(
+    #         """
+    #         INSERT INTO history
+    #         (
+    #             filename,
+    #             status,
+    #             probability,
+    #             severity,
+    #             timestamp
+    #         )
+    #         VALUES (?, ?, ?, ?, ?)
+    #         """,
+    #         (
+    #             "LIVE_SENSOR",
+    #             status,
+    #             float(probability),
+    #             severity,
+    #             datetime.now().strftime(
+    #                 "%Y-%m-%d %H:%M:%S"
+    #             )
+    #         )
+    #     )
 
-        conn.commit()
-        conn.close()
+    #     conn.commit()
+    #     conn.close()
 
     # ==========================================
     # SMART ALERT ENGINE
@@ -1200,15 +1199,6 @@ def sensor_predict(data: SensorInput):
         }
 
     }
-    # ==========================================
-    # Smart Alert Engine
-    # ==========================================
-
-    alert_result = evaluate_alert(
-        probability=probability,
-        pressure=pressure,
-        flow_rate=flow_rate
-    )
 
     # ==========================================
     # Save Confirmed Leakage Alert
